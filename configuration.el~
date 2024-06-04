@@ -1,0 +1,400 @@
+(setq initial-scratch-message
+      (concat
+       ";; This buffer is for text that is not saved, and for Lisp evaluation.\n"
+       ";; To create a file, visit it with C-x C-f and enter text in its buffer.\n"
+       ";;\n"
+       ";; __          __  _                            \n"
+       ";; \\ \\        / / | |                           \n"
+       ";;  \\ \\  /\\  / /__| | ___ ___  _ __ ___   ___   \n"
+       ";;   \\ \\/  \\/ / _ \\ |/ __/ _ \\| '_ ` _ \\ / _ \\  \n"
+       ";;    \\  /\\  /  __/ | (_| (_) | | | | | |  __/_ \n"
+       ";;     \\/  \\/ \\___|_|\\___\\___/|_| |_| |_|\\___(_)\n"))
+
+;; Leave this here, or package.el will just add it again.
+
+(setq gc-cons-thresold 50000000)
+(setq large-file-warning-thresold 100000000)
+
+(prefer-coding-system 'utf-8)
+(set-default-coding-systems 'utf-8)
+(set-terminal-coding-system 'utf-8)
+(set-keyboard-coding-system 'utf-8)
+
+(require 'use-package-ensure)
+(setq use-package-always-ensure t)
+
+(use-package auto-compile
+  :config (auto-compile-on-load-mode))
+
+(setq load-prefer-newer t)
+
+(global-set-key (kbd "C-x k") 'kill-this-buffer)
+(global-set-key (kbd "C-w") 'backward-kill-word)
+(global-set-key (kbd "M-o") 'other-window)
+
+(define-key input-decode-map "\e[1;2A" [S-up])
+
+(global-set-key (kbd "M-/") 'company-complete-common)
+
+(global-set-key (kbd "C-c r") 'elfeed)
+
+(fset 'yes-or-no-p 'y-or-n-p)
+
+(global-auto-revert-mode t)
+(add-hook 'before-save-hook 'whitespace-cleanup)
+
+(setq user-full-name "Supratim Samanta"
+      user-mail-address "supratim.iee23.ju2005@gmail.com")
+
+(menu-bar-mode -1)
+(toggle-scroll-bar -1)
+(tool-bar-mode -1)
+(blink-cursor-mode -1)
+
+(global-hl-line-mode +1)
+(line-number-mode +1)
+(global-display-line-numbers-mode +1)
+(column-number-mode t)
+(size-indication-mode t)
+
+(setq inhibit-startup-screen t)
+
+(setq frame-title-format
+      '((:eval (if (buffer-file-name)
+       (abbreviate-file-name (buffer-file-name))
+       "%b"))))
+
+(setq scroll-margin 0
+      scroll-conservatively 100000
+      scroll-preserve-screen-position 1)
+(set-frame-font "Hack 12" nil t)
+
+(use-package doom-themes
+  :ensure t
+  :config
+  (load-theme 'doom-one t)
+  (doom-themes-visual-bell-config))
+
+(use-package doom-modeline
+  :ensure t
+  :init (doom-modeline-mode 1))
+
+(setq org-ellipsis "⤵")
+
+(use-package org-bullets :ensure t)
+(add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
+(setq org-hide-leading-stars t)
+
+(setq org-src-fontify-natively t)
+
+(global-prettify-symbols-mode t)
+
+(use-package diff-hl
+  :config
+  (add-hook 'prog-mode-hook 'turn-on-diff-hl-mode)
+  (add-hook 'vc-dir-mode-hook 'turn-on-diff-hl-mode))
+
+(use-package minions
+  :config
+  (setq minions-mode-line-lighter ""
+        minions-mode-line-delimiters '("" . ""))
+  (minions-mode 1))
+
+(setq org-src-tab-acts-natively t)
+
+(setq org-src-window-setup 'current-window)
+
+(add-to-list 'org-structure-template-alist
+             '("el" . "src emacs-lisp"))
+
+(use-package smartparens
+  :ensure t
+  :diminish smartparens-mode
+  :config
+  (progn
+    (require 'smartparens-config)
+    (smartparens-global-mode 1)
+    (show-paren-mode t)))
+
+(use-package expand-region
+  :ensure t
+  :bind ("M-m" . er/expand-region))
+
+(use-package crux
+  :ensure t
+  :bind
+  ("C-k" . crux-smart-kill-line)
+  ("C-c n" . crux-cleanup-buffer-or-region)
+  ("C-c f" . crux-recentf-find-file)
+  ("C-a" . crux-move-beginning-of-line))
+
+(use-package undo-tree)
+
+(use-package yasnippet
+  :ensure t
+  :config (use-package yasnippet-snippets :ensure t) (yas-reload-all))
+(yas-global-mode 1)
+
+(setq-default tab-width 4
+          indent-tabs-mode nil)
+
+(use-package let-alist)
+(use-package flycheck)
+
+(use-package company)
+(add-hook 'after-init-hook 'global-company-mode)
+
+(use-package magit
+  :bind
+  ("C-x g" . magit-status)
+
+  :config
+  (use-package evil-magit)
+  (use-package with-editor)
+  (setq magit-push-always-verify nil)
+  (setq git-commit-summary-max-length 50)
+
+  (with-eval-after-load 'magit-remote
+    (magit-define-popup-action 'magit-push-popup ?P
+      'magit-push-implicitly--desc
+      'magit-push-implicitly ?p t))
+
+  (add-hook 'with-editor-mode-hook 'evil-insert-state))
+
+(use-package git-timemachine)
+
+(use-package projectile
+  :ensure t
+  :diminish projectile-mode
+  :bind
+  (("C-c p f" . helm-projectile-find-file)
+   ("C-c p p" . helm-projectile-switch-project)
+   ("C-c p s" . projectile-save-project-buffers))
+  :config
+  (projectile-mode +1)
+)
+
+(use-package helm
+  :ensure t
+  :defer 2
+  :bind
+  ("M-x" . helm-M-x)
+  ("C-x C-f" . helm-find-files)
+  ("M-y" . helm-show-kill-ring)
+  ("C-x b" . helm-mini)
+  ("C-s" . helm-occur-from-isearch)
+  :config
+  (require 'helm-config)
+  (helm-mode 1)
+  (setq helm-locate-fuzzy-match t)
+  (setq helm-split-window-inside-p t
+    helm-move-to-line-cycle-in-source t)
+  (setq helm-autoresize-max-height 0)
+  (setq helm-autoresize-min-height 20)
+  (helm-autoresize-mode 1)
+  (define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action) ; rebind tab to run persistent action
+  (define-key helm-map (kbd "C-i") 'helm-execute-persistent-action) ; make TAB work in terminal
+  (define-key helm-map (kbd "C-z")  'helm-select-action) ; list actions using C-z
+  )
+
+(use-package helm-projectile
+  :ensure t
+  :config
+  (helm-projectile-on))
+
+(use-package golden-ratio :ensure t)
+(golden-ratio-mode 1)
+
+(use-package swiper
+  :ensure t)
+
+(use-package swiper :ensure t
+:config (progn (global-set-key "\C-s" 'swiper)))
+
+(use-package evil
+  :init
+  (setq evil-want-keybinding nil)
+  :config
+  (evil-mode 1))
+
+(use-package evil-collection
+  :after evil)
+
+(use-package evil-surround
+  :config
+  (global-evil-surround-mode 1))
+
+(use-package evil-org
+  :after org
+  :config
+  (add-hook 'org-mode-hook 'evil-org-mode)
+  (add-hook 'evil-org-mode-hook
+        (lambda () (evil-org-set-key-theme)))
+  (require 'evil-org-agenda)
+  (evil-org-agenda-set-keys))
+
+(use-package css-mode
+  :config
+  (setq css-indent-offset 4))
+
+(use-package scss-mode
+  :config
+  (setq scss-compile-at-save nil))
+
+(use-package less-css-mode)
+
+(add-hook 'sh-mode-hook
+      (lambda ()
+        (setq sh-basic-offset 2
+          sh-indentation 2)))
+
+(use-package yaml-mode)
+
+(setq lsp-gopls-staticcheck t)
+(setq lsp-eldoc-render-all t)
+(setq lsp-gopls-complete-unimported t)
+
+(use-package lsp-mode
+  :ensure t
+  :commands (lsp lsp-deferred)
+  :hook (go-mode . lsp-deferred))
+
+;;Set up before-save hooks to format buffer and add/delete imports.
+;;Make sure you don't have other gofmt/goimports hooks enabled.
+
+(defun lsp-go-install-save-hooks ()
+  (add-hook 'before-save-hook #'lsp-format-buffer t t)
+  (add-hook 'before-save-hook #'lsp-organize-imports t t))
+(add-hook 'go-mode-hook #'lsp-go-install-save-hooks)
+
+;;Optional - provides fancier overlays.
+
+(use-package lsp-ui
+  :ensure t
+  :commands lsp-ui-mode
+  :init
+)
+
+;;Company mode is a standard completion package that works well with lsp-mode.
+;;company-lsp integrates company mode completion with lsp-mode.
+;;completion-at-point also works out of the box but doesn't support snippets.
+
+(use-package company
+  :ensure t
+  :config
+  (setq company-idle-delay 0)
+  (setq company-minimum-prefix-length 1))
+
+;;Optional - provides snippet support.
+
+(use-package yasnippet
+  :ensure t
+  :commands yas-minor-mode
+  :hook (go-mode . yas-minor-mode))
+
+;;lsp-ui-doc-enable is false because I don't like the popover that shows up on the right
+;;I'll change it if I want it back
+
+
+(setq lsp-ui-doc-enable nil
+      lsp-ui-peek-enable t
+      lsp-ui-sideline-enable t
+      lsp-ui-imenu-enable t
+      lsp-ui-flycheck-enable t)
+
+(defun custom-go-mode ()
+  (display-line-numbers-mode 1))
+
+(use-package go-mode
+:defer t
+:ensure t
+:mode ("\\.go\\'" . go-mode)
+:init
+  (setq compile-command "echo Building... && go build -v && echo Testing... && go test -v && echo Linter... && golint")
+  (setq compilation-read-command nil)
+  (add-hook 'go-mode-hook 'custom-go-mode)
+:bind (("M-," . compile)
+("M-." . godef-jump)))
+
+(setq compilation-window-height 14)
+(defun my-compilation-hook ()
+  (when (not (get-buffer-window "*compilation*"))
+    (save-selected-window
+      (save-excursion
+    (let* ((w (split-window-vertically))
+           (h (window-height w)))
+      (select-window w)
+      (switch-to-buffer "*compilation*")
+      (shrink-window (- h compilation-window-height)))))))
+(add-hook 'compilation-mode-hook 'my-compilation-hook)
+
+(global-set-key (kbd "C-c C-c") 'comment-or-uncomment-region)
+(setq compilation-scroll-output t)
+
+(use-package multi-term)
+(global-set-key (kbd "C-c t") 'multi-term)
+
+(setq multi-term-program-switches "--login")
+
+(evil-set-initial-state 'term-mode 'emacs)
+
+(defun hrs/term-paste (&optional string)
+  (interactive)
+  (process-send-string
+   (get-buffer-process (current-buffer))
+   (if string string (current-kill 0))))
+
+(add-hook 'term-mode-hook
+      (lambda ()
+        (goto-address-mode)
+        (define-key term-raw-map (kbd "C-y") 'hrs/term-paste)
+        (define-key term-raw-map (kbd "<mouse-2>") 'hrs/term-paste)
+        (define-key term-raw-map (kbd "M-o") 'other-window)
+        (setq yas-dont-activate t)))
+
+(use-package ox-reveal :ensure t)
+(setq org-reveal-root "https://cdn.jsdelivr.net/npm/reveal.js")
+(setq org-reveal-mathjax t)
+
+(require 'ox-md)
+(require 'ox-beamer)
+
+(use-package gnuplot)
+
+(org-babel-do-load-languages
+ 'org-babel-load-languages
+ '((emacs-lisp . t)
+   (dot . t)
+   (gnuplot . t)))
+
+(setq org-confirm-babel-evaluate nil)
+
+(use-package htmlize)
+
+(use-package graphviz-dot-mode)
+(add-to-list 'org-src-lang-modes '("dot" . graphviz-dot))
+
+(setq org-export-with-smart-quotes t)
+
+(setq org-html-postamble nil)
+
+(use-package elfeed :ensure t
+:config (elfeed-set-max-connections 32))
+
+(use-package elfeed-org :ensure t
+  :config
+  (progn
+    (elfeed-org)
+    (setq rmh-elfeed-org-files (list "~/.emacs.d/feeds.org"))))
+
+(use-package elfeed-goodies :ensure t
+:config (elfeed-goodies/setup))
+
+(add-to-list 'evil-emacs-state-modes 'elfeed-show-mode)
+(add-to-list 'evil-emacs-state-modes 'elfeed-search-mode)
+
+(evil-add-hjkl-bindings elfeed-search-mode-map)
+(evil-add-hjkl-bindings elfeed-show-mode-map)
+
+(define-key elfeed-show-mode-map "o" 'elfeed-show-visit)
+(define-key elfeed-search-mode-map "o" 'elfeed-search-browse-url)

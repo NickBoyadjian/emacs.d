@@ -1,0 +1,1 @@
+/home/nick/.emacs.d/elpaca/repos/nano-modeline/nano-modeline.el
