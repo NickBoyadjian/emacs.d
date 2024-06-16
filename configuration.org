@@ -1,5 +1,5 @@
 #+title: Emacs configuration
-#+author: Nick Boyadjian
+#+author: Nick
 
 * Early init
 :PROPERTIES:
@@ -295,4 +295,67 @@ Latest transient (bug elpaca)
       :after (treemacs)
       :ensure t
       :config (treemacs-set-scope-type 'Tabs))
+#+end_src
+* Dashtboard
+  #+begin_src emacs-lisp
+(use-package dashboard
+  :custom
+  (dashboard-projects-backend 'project-el)
+  (dashboard-items '((recents  . 5)
+                     (projects . 5)
+                     (bookmarks . 5)
+                     (agenda . 5)))
+  (dashboard-startup-banner 'logo)
+  (dashboard-center-content t)
+  (dashboard-display-icons-p t)
+  (dashboard-icon-type 'nerd-icons)
+  (dashboard-set-heading-icons t)
+  (dashboard-set-file-icons t)
+  (initial-buffer-choice (lambda () (get-buffer-create "*dashboard*")))
+  :config
+  (dashboard-setup-startup-hook))
+#+end_src
+* Switch Window
+#+begin_src emacs-lisp
+  (use-package switch-window
+    :bind ("C-x o" . switch-window))
+#+end_src
+* General (Keybindings)
+  #+begin_src emacs-lisp
+(use-package general
+  :ensure t
+  :config 
+
+(general-create-definer global-definer
+  :keymaps 'override
+  :prefix  "C-c")
+
+(defmacro +general-global-menu! (name infix-key &rest body)
+  "Create a definer named +general-global-NAME wrapping global-definer.
+Create prefix map: +general-global-NAME. Prefix bindings in BODY with INFIX-KEY."
+  (declare (indent 2))
+  `(progn
+     (general-create-definer ,(intern (concat "+general-global-" name))
+       :wrapping global-definer
+       :prefix-map (quote ,(intern (concat "+general-global-" name "-map")))
+       :infix ,infix-key
+       :wk-full-keys nil
+       "" '(:ignore t :which-key ,name))
+     (,(intern (concat "+general-global-" name))
+      ,@body)))
+
+(+general-global-menu! "buffer" "b"
+  "d"  'kill-current-buffer
+  "o" '((lambda () (interactive) (switch-to-buffer nil))
+        :which-key "other-buffer")
+  "p"  'previous-buffer
+  "r"  'rename-buffer
+  "M" '((lambda () (interactive) (switch-to-buffer "*Messages*"))
+        :which-key "messages-buffer")
+  "n"  'next-buffer
+  "s" '((lambda () (interactive) (switch-to-buffer "*scratch*"))
+        :which-key "scratch-buffer")
+  "TAB" '((lambda () (interactive) (switch-to-buffer nil))
+          :which-key "other-buffer"))
+)
 #+end_src
