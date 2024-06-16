@@ -2427,7 +2427,7 @@ readability.
 
      Insert X at the position signified by the symbol ‘it’ in the first
      form.  If there are more forms, insert the first form at the
-     position signified by ‘it’ in in second form, etc.
+     position signified by ‘it’ in the second form, etc.
 
           (--> "def" (concat "abc" it "ghi"))
               ⇒ "abcdefghi"
@@ -4892,53 +4892,53 @@ Node: Threading macros84443
 Ref: ->84668
 Ref: ->>85156
 Ref: -->85659
-Ref: -as->86215
-Ref: -some->86669
-Ref: -some->>87054
-Ref: -some-->87501
-Ref: -doto88068
-Node: Binding88621
-Ref: -when-let88828
-Ref: -when-let*89289
-Ref: -if-let89818
-Ref: -if-let*90184
-Ref: -let90807
-Ref: -let*96897
-Ref: -lambda97834
-Ref: -setq98640
-Node: Side effects99441
-Ref: -each99635
-Ref: -each-while100162
-Ref: -each-indexed100782
-Ref: -each-r101374
-Ref: -each-r-while101816
-Ref: -dotimes102460
-Node: Destructive operations103013
-Ref: !cons103231
-Ref: !cdr103435
-Node: Function combinators103628
-Ref: -partial103832
-Ref: -rpartial104350
-Ref: -juxt104998
-Ref: -compose105450
-Ref: -applify106057
-Ref: -on106487
-Ref: -flip107259
-Ref: -rotate-args107783
-Ref: -const108412
-Ref: -cut108754
-Ref: -not109234
-Ref: -orfn109778
-Ref: -andfn110571
-Ref: -iteratefn111358
-Ref: -fixfn112060
-Ref: -prodfn113634
-Node: Development114785
-Node: Contribute115074
-Node: Contributors116086
-Node: FDL118179
-Node: GPL143499
-Node: Index181248
+Ref: -as->86216
+Ref: -some->86670
+Ref: -some->>87055
+Ref: -some-->87502
+Ref: -doto88069
+Node: Binding88622
+Ref: -when-let88829
+Ref: -when-let*89290
+Ref: -if-let89819
+Ref: -if-let*90185
+Ref: -let90808
+Ref: -let*96898
+Ref: -lambda97835
+Ref: -setq98641
+Node: Side effects99442
+Ref: -each99636
+Ref: -each-while100163
+Ref: -each-indexed100783
+Ref: -each-r101375
+Ref: -each-r-while101817
+Ref: -dotimes102461
+Node: Destructive operations103014
+Ref: !cons103232
+Ref: !cdr103436
+Node: Function combinators103629
+Ref: -partial103833
+Ref: -rpartial104351
+Ref: -juxt104999
+Ref: -compose105451
+Ref: -applify106058
+Ref: -on106488
+Ref: -flip107260
+Ref: -rotate-args107784
+Ref: -const108413
+Ref: -cut108755
+Ref: -not109235
+Ref: -orfn109779
+Ref: -andfn110572
+Ref: -iteratefn111359
+Ref: -fixfn112061
+Ref: -prodfn113635
+Node: Development114786
+Node: Contribute115075
+Node: Contributors116087
+Node: FDL118180
+Node: GPL143500
+Node: Index181249
 
 End Tag Table
 

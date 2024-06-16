@@ -1,1 +1,1 @@
-/home/nick/.emacs.d/elpaca/repos/nix-mode/nix.el
+/Users/nickboyadjian/projects/nick/emacs.d/elpaca/repos/nix-mode/nix.el

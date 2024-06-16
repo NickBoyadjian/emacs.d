@@ -1,1 +1,1 @@
-/home/nick/.emacs.d/elpaca/repos/org-modern/org-modern.el
+/Users/nickboyadjian/projects/nick/emacs.d/elpaca/repos/org-modern/org-modern.el

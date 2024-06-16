@@ -1,1 +1,1 @@
-/home/nick/.emacs.d/elpaca/repos/vertico/extensions/vertico-buffer.el
+/Users/nickboyadjian/projects/nick/emacs.d/elpaca/repos/vertico/extensions/vertico-buffer.el

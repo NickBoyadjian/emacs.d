@@ -1,1 +1,1 @@
-/home/nick/.emacs.d/elpaca/repos/compat/compat-29.el
+/Users/nickboyadjian/projects/nick/emacs.d/elpaca/repos/compat/compat-29.el

@@ -1,0 +1,1 @@
+/Users/nickboyadjian/projects/nick/emacs.d/elpaca/repos/goto-chg/goto-chg.el

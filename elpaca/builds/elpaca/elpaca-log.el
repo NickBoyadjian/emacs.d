@@ -1,1 +1,1 @@
-/home/nick/.emacs.d/elpaca/repos/elpaca/elpaca-log.el
+/Users/nickboyadjian/projects/nick/emacs.d/elpaca/repos/elpaca/elpaca-log.el

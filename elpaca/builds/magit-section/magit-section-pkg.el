@@ -1,1 +1,1 @@
-/home/nick/.emacs.d/elpaca/repos/magit/lisp/magit-section-pkg.el
+/Users/nickboyadjian/projects/nick/emacs.d/elpaca/repos/magit/lisp/magit-section-pkg.el

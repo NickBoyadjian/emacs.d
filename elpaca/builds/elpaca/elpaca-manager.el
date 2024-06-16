@@ -1,1 +1,1 @@
-/home/nick/.emacs.d/elpaca/repos/elpaca/elpaca-manager.el
+/Users/nickboyadjian/projects/nick/emacs.d/elpaca/repos/elpaca/elpaca-manager.el

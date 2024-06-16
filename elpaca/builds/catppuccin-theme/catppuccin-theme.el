@@ -1,1 +1,1 @@
-/home/nick/.emacs.d/elpaca/repos/emacs/catppuccin-theme.el
+/Users/nickboyadjian/projects/nick/emacs.d/elpaca/repos/emacs/catppuccin-theme.el

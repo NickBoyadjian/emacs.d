@@ -1,0 +1,1 @@
+/Users/nickboyadjian/projects/nick/emacs.d/elpaca/repos/all-the-icons/all-the-icons-faces.el

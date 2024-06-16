@@ -27,7 +27,7 @@ File: compat.info,  Node: Top,  Next: Introduction,  Up: (dir)
 
 This manual documents the usage of the "Compat" Emacs lisp library, the
 forward-compatibility library for Emacs Lisp, corresponding to version
-29.1.4.4.
+29.1.4.5.
 
    Copyright © 2022-2024 Free Software Foundation, Inc.
 
@@ -105,7 +105,7 @@ as a dependency in the header.  The version of the Compat library
 mirrors the version of Emacs releases.  The current version of Compat
 corresponds to the current Emacs release.
 
-     ;; Package-Requires: ((emacs "24.4") (compat "29.1.4.4"))
+     ;; Package-Requires: ((emacs "24.4") (compat "29.1.4.5"))
 
    There is no need to depend on ‘emacs 24.4’ specifically.  One can
 choose any newer version, if features not provided by Compat necessitate
@@ -1774,11 +1774,6 @@ available by Compat.
      native compilation is not available, this function behaves
      identically to ‘subrp’.
 
- -- Function: subr-native-elisp-p object
-     Return ‘t’ if OBJECT if the object is native compiled lisp.  If
-     native compilation is not available, this function always returns
-     ‘nil’.
-
  -- Function: native-comp-available-p
      This function returns non-‘nil’ if the running Emacs process has
      the native-compilation support compiled into it.  On systems that
@@ -2769,7 +2764,7 @@ Appendix A Function Index
 * compat-call alist-get:                 Emacs 26.1.          (line 344)
 * compat-call assoc:                     Emacs 26.1.          (line 316)
 * compat-call assoc-delete-all:          Emacs 27.1.          (line 417)
-* compat-call count-windows:             Emacs 28.1.          (line 412)
+* compat-call count-windows:             Emacs 28.1.          (line 407)
 * compat-call define-key:                Emacs 29.1.          (line 755)
 * compat-call executable-find:           Emacs 27.1.          (line 429)
 * compat-call file-size-human-readable:  Emacs 27.1.          (line 397)
@@ -2788,7 +2783,7 @@ Appendix A Function Index
 * compat-call string-trim:               Emacs 26.1.          (line 375)
 * compat-call string-trim-left:          Emacs 26.1.          (line 359)
 * compat-call string-trim-right:         Emacs 26.1.          (line 367)
-* compat-call string-width:              Emacs 28.1.          (line 395)
+* compat-call string-width:              Emacs 28.1.          (line 390)
 * compat-function:                       Usage.               (line  58)
 * compiled-function-p:                   Emacs 29.1.          (line 226)
 * count-sentences:                       Emacs 29.1.          (line  25)
@@ -2890,7 +2885,7 @@ Appendix A Function Index
 * match-buffers:                         Emacs 29.1.          (line 292)
 * minibuffer-history-value:              Emacs 27.1.          (line  32)
 * named-let:                             Emacs 28.1.          (line 207)
-* native-comp-available-p:               Emacs 28.1.          (line 376)
+* native-comp-available-p:               Emacs 28.1.          (line 371)
 * ntake:                                 Emacs 29.1.          (line 213)
 * package-get-version:                   Emacs 27.1.          (line 205)
 * plistp:                                Emacs 29.1.          (line  65)
@@ -2922,7 +2917,6 @@ Appendix A Function Index
 * string-replace:                        Emacs 28.1.          (line  77)
 * string-search:                         Emacs 28.1.          (line  34)
 * string-split:                          Emacs 29.1.          (line 252)
-* subr-native-elisp-p:                   Emacs 28.1.          (line 371)
 * subr-primitive-p:                      Emacs 28.1.          (line 364)
 * substitute-quotes:                     Emacs 29.1.          (line  34)
 * take:                                  Emacs 29.1.          (line 199)
@@ -2950,7 +2944,7 @@ Appendix A Function Index
 * with-minibuffer-selected-window:       Emacs 27.1.          (line  38)
 * with-restriction:                      Emacs 29.1.          (line  73)
 * with-suppressed-warnings:              Emacs 27.1.          (line  65)
-* with-window-non-dedicated:             Emacs 28.1.          (line 384)
+* with-window-non-dedicated:             Emacs 28.1.          (line 379)
 * without-restriction:                   Emacs 29.1.          (line 107)
 * xor:                                   Emacs 27.1.          (line 142)
 
@@ -2984,10 +2978,10 @@ Node: Emacs 25.112758
 Node: Emacs 26.122157
 Node: Emacs 27.139448
 Node: Emacs 28.159842
-Node: Emacs 29.179920
-Node: Development117296
-Node: Function Index119027
-Node: Variable Index134456
+Node: Emacs 29.179718
+Node: Development117094
+Node: Function Index118825
+Node: Variable Index134181
 
 End Tag Table
 

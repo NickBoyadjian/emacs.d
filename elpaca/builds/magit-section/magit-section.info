@@ -1,7 +1,8 @@
 This is magit-section.info, produced by makeinfo version 7.0.3 from
 magit-section.texi.
 
-     Copyright (C) 2015-2024 Jonas Bernoulli <jonas@bernoul.li>
+     Copyright (C) 2015-2024 Jonas Bernoulli
+     <emacs.magit@jonas.bernoulli.dev>
 
      You can redistribute this document and/or modify it under the terms
      of the GNU General Public License as published by the Free Software
@@ -35,7 +36,8 @@ you can use sections in your own packages.
 
 This manual is for Magit-Section version 3.3.0.50-git.
 
-     Copyright (C) 2015-2024 Jonas Bernoulli <jonas@bernoul.li>
+     Copyright (C) 2015-2024 Jonas Bernoulli
+     <emacs.magit@jonas.bernoulli.dev>
 
      You can redistribute this document and/or modify it under the terms
      of the GNU General Public License as published by the Free Software
@@ -293,11 +295,11 @@ File: magit-section.info,  Node: Matching Functions,  Prev: Core Functions,  Up:
 
 
 Tag Table:
-Node: Top790
-Node: Introduction2078
-Node: Creating Sections2848
-Node: Core Functions7356
-Node: Matching Functions10408
+Node: Top810
+Node: Introduction2118
+Node: Creating Sections2888
+Node: Core Functions7396
+Node: Matching Functions10448
 
 End Tag Table
 
