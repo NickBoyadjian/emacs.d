@@ -129,6 +129,60 @@ n
   (setq vertico-count 20)
   (setq vertico-cycle t))
 #+end_src
+** Project search
+#+begin_src emacs-lisp
+(setf epa-pinentry-mode 'loopback)
+#+end_src
+** Consult
+#+begin_src emacs-lisp
+  ;; Example configuration for Consult
+(use-package consult
+  ;; Enable automatic preview at point in the *Completions* buffer. This is
+  ;; relevant when you use the default completion UI.
+  :hook (completion-list-mode . consult-preview-at-point-mode)
+
+  ;; The :init configuration is always executed (Not lazy)
+  :init
+
+  ;; Optionally configure the register formatting. This improves the register
+  ;; preview for `consult-register', `consult-register-load',
+  ;; `consult-register-store' and the Emacs built-ins.
+  (setq register-preview-delay 0.5
+        register-preview-function #'consult-register-format)
+
+  ;; Optionally tweak the register preview window.
+  ;; This adds thin lines, sorting and hides the mode line of the window.
+  (advice-add #'register-preview :override #'consult-register-window)
+
+  ;; Use Consult to select xref locations with preview
+  (setq xref-show-xrefs-function #'consult-xref
+        xref-show-definitions-function #'consult-xref)
+
+  ;; Configure other variables and modes in the :config section,
+  ;; after lazily loading the package.
+  :config
+
+  ;; Optionally configure preview. The default value
+  ;; is 'any, such that any key triggers the preview.
+  ;; (setq consult-preview-key 'any)
+  ;; (setq consult-preview-key "M-.")
+  ;; (setq consult-preview-key '("S-<down>" "S-<up>"))
+  ;; For some commands and buffer sources it is useful to configure the
+  ;; :preview-key on a per-command basis using the `consult-customize' macro.
+  (consult-customize
+   consult-theme :preview-key '(:debounce 0.2 any)
+   consult-ripgrep consult-git-grep consult-grep
+   consult-bookmark consult-recent-file consult-xref
+   consult--source-bookmark consult--source-file-register
+   consult--source-recent-file consult--source-project-recent-file
+   ;; :preview-key "M-."
+   :preview-key '(:debounce 0.4 any))
+
+  ;; Optionally configure the narrowing key.
+  ;; Both < and C-+ work reasonably well.
+  (setq consult-narrow-key "<") ;; "C-+"
+)
+#+end_src
 * Languages
 ** Nix
    #+begin_src emacs-lisp
@@ -326,36 +380,38 @@ Latest transient (bug elpaca)
   :ensure t
   :config 
 
-(general-create-definer global-definer
-  :keymaps 'override
-  :prefix  "C-c")
+  (general-create-definer global-definer
+    :keymaps 'override
+    :prefix  "C-c")
 
-(defmacro +general-global-menu! (name infix-key &rest body)
-  "Create a definer named +general-global-NAME wrapping global-definer.
-Create prefix map: +general-global-NAME. Prefix bindings in BODY with INFIX-KEY."
-  (declare (indent 2))
-  `(progn
-     (general-create-definer ,(intern (concat "+general-global-" name))
-       :wrapping global-definer
-       :prefix-map (quote ,(intern (concat "+general-global-" name "-map")))
-       :infix ,infix-key
-       :wk-full-keys nil
-       "" '(:ignore t :which-key ,name))
-     (,(intern (concat "+general-global-" name))
-      ,@body)))
+  (defmacro +general-global-menu! (name infix-key &rest body)
+    "Create a definer named +general-global-NAME wrapping global-definer.
+  Create prefix map: +general-global-NAME. Prefix bindings in BODY with INFIX-KEY."
+    (declare (indent 2))
+    `(progn
+       (general-create-definer ,(intern (concat "+general-global-" name))
+	 :wrapping global-definer
+	 :prefix-map (quote ,(intern (concat "+general-global-" name "-map")))
+	 :infix ,infix-key
+	 :wk-full-keys nil
+	 "" '(:ignore t :which-key ,name))
+       (,(intern (concat "+general-global-" name))
+	,@body)))
 
-(+general-global-menu! "buffer" "b"
-  "d"  'kill-current-buffer
-  "o" '((lambda () (interactive) (switch-to-buffer nil))
-        :which-key "other-buffer")
-  "p"  'previous-buffer
-  "r"  'rename-buffer
-  "M" '((lambda () (interactive) (switch-to-buffer "*Messages*"))
-        :which-key "messages-buffer")
-  "n"  'next-buffer
-  "s" '((lambda () (interactive) (switch-to-buffer "*scratch*"))
-        :which-key "scratch-buffer")
-  "TAB" '((lambda () (interactive) (switch-to-buffer nil))
-          :which-key "other-buffer"))
+  (+general-global-menu! "buffer" "b"
+    "d"  'kill-current-buffer
+    "b"  'consult-project-buffer
+    "B"  'consult-buffer
+    "p"  'previous-buffer
+    "r"  'rename-buffer
+    "s" '((lambda () (interactive) (switch-to-buffer "*scratch*"))
+	  :which-key "scratch-buffer")
+    "TAB" '((lambda () (interactive) (switch-to-buffer nil))
+	    :which-key "other-buffer"))
+
+  (+general-global-menu! "project" "p"
+    "p"  'project-switch-project
+    "f"  'project-find-file
+    "s"  'consult-grep)
 )
 #+end_src
