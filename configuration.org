@@ -13,7 +13,6 @@
 
   (setq package-enable-at-startup nil)
 #+end_src
-n
 * Startup performance
 #+begin_src emacs-lpisp
   (setq gc-cons-threshold (* 50 1000 1000))
@@ -52,14 +51,6 @@ n
   (set-default-coding-systems 'utf-8)
 #+end_src
 
-* Theme
-#+begin_src emacs-lisp
-  (use-package catppuccin-theme
-    :ensure t
-    :config
-    (load-theme 'catppuccin))
-#+end_src
-
 * Modeline
 #+begin_src emacs-lisp
   (use-package moody
@@ -69,7 +60,42 @@ n
     (moody-replace-vc-mode)
     (moody-replace-eldoc-minibuffer-message-function))
 #+end_src
+* Theme
+#+begin_src emacs-lisp
+  (use-package catppuccin-theme
+    :ensure t
+    :config
+    (load-theme 'catppuccin)
+    (setq catppuccin-flavor 'frappe) ;; or 'latte, 'macchiato, 'frappe or 'mocha
+    (catppuccin-reload))
+#+end_src
+* Formatting
+  #+begin_src emacs-lisp
+    (use-package apheleia
+      :ensure t
+      :config
+      (apheleia-global-mode))
+#+end_src
+* Text editing
+** Delimiter pairs
+  #+begin_src emacs_lisp
+(electric-pair-mode t)
+#+end_src
+** Mac OS
+   #+begin_src emacs-lisp
+(defconst VS/IS-MACOS (eq system-type 'darwin))
 
+(when NB/IS-MACOS
+  (setopt mac-command-modifier 'meta
+	  mac-option-modifier 'hyper))
+#+end_src
+** Avy
+   #+begin_src emacs-lisp
+     (use-package avy
+       :ensure t
+       :config
+       (global-set-key (kbd "C-;") 'avy-goto-char))
+#+end_src
 * Org mode
 ** Org modern
 #+begin_src emacs-lisp
@@ -129,6 +155,17 @@ n
   (setq vertico-count 20)
   (setq vertico-cycle t))
 #+end_src
+** Orderless
+   #+begin_src emacs-lisp
+(use-package orderless
+  :init
+  ;; Configure a custom style dispatcher (see the Consult wiki)
+  ;; (setq orderless-style-dispatchers '(+orderless-consult-dispatch orderless-affix-dispatch)
+  ;;       orderless-component-separator #'orderless-escapable-split-on-space)
+  (setq completion-styles '(orderless basic)
+        completion-category-defaults nil
+        completion-category-overrides '((file (styles partial-completion))))
+#+end_src
 ** Project search
 #+begin_src emacs-lisp
 (setf epa-pinentry-mode 'loopback)
@@ -181,9 +218,9 @@ n
   ;; Optionally configure the narrowing key.
   ;; Both < and C-+ work reasonably well.
   (setq consult-narrow-key "<") ;; "C-+"
-)
+))
 #+end_src
-* Languages
+* Programming Languages
 ** Nix
    #+begin_src emacs-lisp
      (use-package nix-mode
@@ -192,8 +229,44 @@ n
 #+end_src
 ** Elixir
    #+begin_src emacs-lisp
-(use-package elixir-mode
-  :ensure t)
+     (use-package elixir-mode
+       :ensure t)
+
+     (use-package elixir-ts-mode
+       :defer t
+       :hook (elixir-ts-mode . (lambda () (tempo-use-tag-list 'elixir-tempo-tags)))
+       :bind (:map elixir-ts-mode-map
+		   ("C-c C-c f" . elixir-format-buffer)
+		   ("C-c C-c M" . vs/elixir-map-string-to-map-atom)
+		   ("C-c C-c m" . vs/elixir-map-atom-to-map-string)
+		   ("C-c C-c J" . vs/etf-to-json)
+		   ("C-c C-c j" . vs/json-to-etf)
+		   ("C-c C-c D" . vs/elixir-open-dep-docs)
+		   ("C-c C-c z" . run-elixir-project))
+       :config
+       ;; reformatter
+       (reformatter-define elixir-format
+	 :program "mix"
+
+       ;; add major mode remap alist
+       (add-to-list 'major-mode-remap-alist
+		    '(elixir-mode . elixir-ts-mode))))
+
+     (use-package exunit
+       :config
+       ;; fix broken dark test link
+       (custom-set-faces
+	'(ansi-color-black ((t (:background "MediumPurple2" :foreground "MediumPurple2")))))
+       :hook
+       (elixir-ts-mode . exunit-mode)
+       (elixir-mode . exunit-mode))
+
+     (defun nick/enter-pipe ()
+       (interactive)
+       (let ((oldpos (point)))
+	 (end-of-line)
+	 (newline-and-indent)
+	 (insert "|> ")))
 #+end_src
 * Git
   Latest seq for transient (with workaround due to a bug on elpaca)
@@ -330,12 +403,6 @@ Latest transient (bug elpaca)
       :hook (dired-mode . treemacs-icons-dired-enable-once)
       :ensure t)
 
-    (use-package treemacs-all-the-icons
-      :config
-      (treemacs-load-theme 'nerd-icons)
-      (map! :desc "Select Treemacs window" "<f8>" #'treemacs-select-window)    (use-package treemacs-all-the-icons
-      :ensure t)
-
     (use-package treemacs-magit
       :after (treemacs magit)
       :ensure t)
@@ -350,7 +417,7 @@ Latest transient (bug elpaca)
       :ensure t
       :config (treemacs-set-scope-type 'Tabs))
 #+end_src
-* Dashtboard
+* Dashboard
   #+begin_src emacs-lisp
 (use-package dashboard
   :custom
@@ -369,49 +436,86 @@ Latest transient (bug elpaca)
   :config
   (dashboard-setup-startup-hook))
 #+end_src
+* Vterm
+  #+begin_src emacs-lisp
+(use-package vterm)
+#+end_src
 * Switch Window
 #+begin_src emacs-lisp
   (use-package switch-window
     :bind ("C-x o" . switch-window))
 #+end_src
+* LSP
+  #+begin_src emacs-lisp
+    (use-package lsp-mode
+      :init
+      ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
+      (setq lsp-keymap-prefix "C-c l")
+      :hook ((elixir-mode . lsp)
+	     (lsp-mode . lsp-enable-which-key-integration))
+      :commands (lsp lsp-deferred))
+
+    ;; optionally
+    (use-package lsp-ui :commands lsp-ui-mode)
+    (use-package lsp-treemacs :commands lsp-treemacs-errors-list)
+
+    ;; optionally if you want to use debugger
+    ;; (use-package dap-mode)
+    ;; (use-package dap-LANGUAGE) to load the dap adapter for your language
+#+end_src
 * General (Keybindings)
   #+begin_src emacs-lisp
-(use-package general
-  :ensure t
-  :config 
+    (use-package general
+      :ensure t
+      :config
 
-  (general-create-definer global-definer
-    :keymaps 'override
-    :prefix  "C-c")
+      (defvar-keymap prefix-buffer-map
+	:doc "Prefix key map for buffers."
+	"i" 'ibuffer
+	"d"  'kill-current-buffer
+	"b"  'consult-project-buffer
+	"B"  'consult-buffer
+	"p"  'Previous-buffer)
 
-  (defmacro +general-global-menu! (name infix-key &rest body)
-    "Create a definer named +general-global-NAME wrapping global-definer.
-  Create prefix map: +general-global-NAME. Prefix bindings in BODY with INFIX-KEY."
-    (declare (indent 2))
-    `(progn
-       (general-create-definer ,(intern (concat "+general-global-" name))
-	 :wrapping global-definer
-	 :prefix-map (quote ,(intern (concat "+general-global-" name "-map")))
-	 :infix ,infix-key
-	 :wk-full-keys nil
-	 "" '(:ignore t :which-key ,name))
-       (,(intern (concat "+general-global-" name))
-	,@body)))
+      (defvar-keymap prefix-window-map
+	:doc "Prefix key map for windows."
+	"c" 'split-window-right
+	"n" 'split-window-below
+	"d" 'delete-window
+	"o" 'ace-window)
 
-  (+general-global-menu! "buffer" "b"
-    "d"  'kill-current-buffer
-    "b"  'consult-project-buffer
-    "B"  'consult-buffer
-    "p"  'previous-buffer
-    "r"  'rename-buffer
-    "s" '((lambda () (interactive) (switch-to-buffer "*scratch*"))
-	  :which-key "scratch-buffer")
-    "TAB" '((lambda () (interactive) (switch-to-buffer nil))
-	    :which-key "other-buffer"))
+      (defvar-keymap prefix-project-map
+	:doc "Prefix key map for projects."
+	"p" 'project-switch-project
+	"f" 'project-find-file
+	"s" 'conult-grep)
 
-  (+general-global-menu! "project" "p"
-    "p"  'project-switch-project
-    "f"  'project-find-file
-    "s"  'consult-grep)
-)
+      (defvar-keymap prefix-search-map
+	:doc "Prefix key map for searching."
+	"p" 'consult-grep
+	"b" 'consult-line)
+
+      (defvar-keymap prefix-open-map
+	:doc "Prefix key map for opening things."
+	"t" 'vterm
+	"p" 'treemacs)
+
+      (defvar-keymap prefix-map
+	:doc "My prefix key map."
+	"b" prefix-buffer-map
+	"w" prefix-window-map
+	"p" prefix-project-map
+	"o" prefix-open-map
+	"s" prefix-search-map)
+
+      (which-key-add-keymap-based-replacements prefix-map
+	"b" `("Buffer" . ,prefix-buffer-map)
+	"w" `("Window" . ,prefix-window-map)
+	"p" `("Project" . ,prefix-project-map)
+	"o" `("Open" . ,prefix-open-map)
+	"s" `("Search" . ,prefix-search-map))
+
+      (keymap-set global-map "C-." prefix-map)
+      )
 #+end_src
+

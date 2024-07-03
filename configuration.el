@@ -16,17 +16,24 @@
 (set-language-environment "UTF-8")
 (set-default-coding-systems 'utf-8)
 
-(use-package catppuccin-theme
-  :ensure t
-  :config
-  (load-theme 'catppuccin))
-
 (use-package moody
   :config
   (setq x-underline-at-descent-line t)
   (moody-replace-mode-line-buffer-identification)
   (moody-replace-vc-mode)
   (moody-replace-eldoc-minibuffer-message-function))
+
+(use-package catppuccin-theme
+  :ensure t
+  :config
+  (load-theme 'catppuccin)
+  (setq catppuccin-flavor 'frappe) ;; or 'latte, 'macchiato, 'frappe or 'mocha
+  (catppuccin-reload))
+
+(use-package apheleia
+  :ensure t
+  :config
+  (apheleia-global-mode))
 
 (use-package org-modern
 :ensure t
@@ -80,6 +87,65 @@
   (vertico-mode)
   (setq vertico-count 20)
   (setq vertico-cycle t))
+
+(use-package orderless
+  :init
+  ;; Configure a custom style dispatcher (see the Consult wiki)
+  ;; (setq orderless-style-dispatchers '(+orderless-consult-dispatch orderless-affix-dispatch)
+  ;;       orderless-component-separator #'orderless-escapable-split-on-space)
+  (setq completion-styles '(orderless basic)
+        completion-category-defaults nil
+        completion-category-overrides '((file (styles partial-completion))))
+
+(setf epa-pinentry-mode 'loopback)
+
+;; Example configuration for Consult
+(use-package consult
+  ;; Enable automatic preview at point in the *Completions* buffer. This is
+  ;; relevant when you use the default completion UI.
+  :hook (completion-list-mode . consult-preview-at-point-mode)
+
+  ;; The :init configuration is always executed (Not lazy)
+  :init
+
+  ;; Optionally configure the register formatting. This improves the register
+  ;; preview for `consult-register', `consult-register-load',
+  ;; `consult-register-store' and the Emacs built-ins.
+  (setq register-preview-delay 0.5
+        register-preview-function #'consult-register-format)
+
+  ;; Optionally tweak the register preview window.
+  ;; This adds thin lines, sorting and hides the mode line of the window.
+  (advice-add #'register-preview :override #'consult-register-window)
+
+  ;; Use Consult to select xref locations with preview
+  (setq xref-show-xrefs-function #'consult-xref
+        xref-show-definitions-function #'consult-xref)
+
+  ;; Configure other variables and modes in the :config section,
+  ;; after lazily loading the package.
+  :config
+
+  ;; Optionally configure preview. The default value
+  ;; is 'any, such that any key triggers the preview.
+  ;; (setq consult-preview-key 'any)
+  ;; (setq consult-preview-key "M-.")
+  ;; (setq consult-preview-key '("S-<down>" "S-<up>"))
+  ;; For some commands and buffer sources it is useful to configure the
+  ;; :preview-key on a per-command basis using the `consult-customize' macro.
+  (consult-customize
+   consult-theme :preview-key '(:debounce 0.2 any)
+   consult-ripgrep consult-git-grep consult-grep
+   consult-bookmark consult-recent-file consult-xref
+   consult--source-bookmark consult--source-file-register
+   consult--source-recent-file consult--source-project-recent-file
+   ;; :preview-key "M-."
+   :preview-key '(:debounce 0.4 any))
+
+  ;; Optionally configure the narrowing key.
+  ;; Both < and C-+ work reasonably well.
+  (setq consult-narrow-key "<") ;; "C-+"
+))
 
 (use-package nix-mode
   :ensure t
@@ -210,12 +276,6 @@
   :hook (dired-mode . treemacs-icons-dired-enable-once)
   :ensure t)
 
-(use-package treemacs-all-the-icons
-  :config
-  (treemacs-load-theme 'nerd-icons)
-  (map! :desc "Select Treemacs window" "<f8>" #'treemacs-select-window)    (use-package treemacs-all-the-icons
-  :ensure t)
-
 (use-package treemacs-magit
   :after (treemacs magit)
   :ensure t)
@@ -229,3 +289,79 @@
   :after (treemacs)
   :ensure t
   :config (treemacs-set-scope-type 'Tabs))
+
+(use-package dashboard
+  :custom
+  (dashboard-projects-backend 'project-el)
+  (dashboard-items '((recents  . 5)
+                     (projects . 5)
+                     (bookmarks . 5)
+                     (agenda . 5)))
+  (dashboard-startup-banner 'logo)
+  (dashboard-center-content t)
+  (dashboard-display-icons-p t)
+  (dashboard-icon-type 'nerd-icons)
+  (dashboard-set-heading-icons t)
+  (dashboard-set-file-icons t)
+  (initial-buffer-choice (lambda () (get-buffer-create "*dashboard*")))
+  :config
+  (dashboard-setup-startup-hook))
+
+(use-package vterm)
+
+(use-package switch-window
+  :bind ("C-x o" . switch-window))
+
+(use-package lsp-mode
+  :init
+  ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
+  (setq lsp-keymap-prefix "C-c l")
+  :hook ((elixir-mode . lsp)
+	 (lsp-mode . lsp-enable-which-key-integration))
+  :commands (lsp lsp-deferred))
+
+;; optionally
+(use-package lsp-ui :commands lsp-ui-mode)
+(use-package lsp-treemacs :commands lsp-treemacs-errors-list)
+
+;; optionally if you want to use debugger
+;; (use-package dap-mode)
+;; (use-package dap-LANGUAGE) to load the dap adapter for your language
+
+(use-package general
+  :ensure t
+  :config
+
+  (defvar-keymap prefix-buffer-map
+    :doc "Prefix key map for buffers."
+    "i" 'ibuffer
+    "d"  'kill-current-buffer
+    "b"  'consult-project-buffer
+    "B"  'consult-buffer
+    "p"  'previous-buffer)
+
+  (defvar-keymap prefix-project-map
+    :doc "Prefix key map for projects."
+    "p" 'project-switch-project
+    "f" 'project-find-file
+    "s" 'conult-grep)
+
+  (defvar-keymap prefix-open-map
+    :doc "Prefix key map for opening things."
+    "t" 'vterm
+    "p" 'treemacs)
+
+  (defvar-keymap prefix-map
+    :doc "My prefix key map."
+    "b" prefix-buffer-map
+    "p" prefix-project-map
+    "o" prefix-open-map)
+
+
+  (which-key-add-keymap-based-replacements prefix-map
+    "b" `("Buffer" . ,prefix-buffer-map)
+    "p" `("Project" . ,prefix-project-map)
+    "o" `("Open" . ,prefix-open-map))
+
+  (keymap-set global-map "C-." prefix-map)
+)

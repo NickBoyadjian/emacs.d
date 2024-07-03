@@ -1,2 +1,4 @@
 ;;; -*- lisp-data -*-
-(("~/projects/podium/azeroth/"))
+(("~/projects/podium/azeroth/")
+ ("~/projects/nick/emacs.d/")
+ ("~/projects/podium/stormcrow/"))
