@@ -57,6 +57,7 @@
  ;; If there is more than one, they won't work right.
  '(custom-safe-themes
    '("4825b816a58680d1da5665f8776234d4aefce7908594bea75ec9d7e3dc429753" "80214de566132bf2c844b9dee3ec0599f65c5a1f2d6ff21a2c8309e6e70f9242" default))
+ '(org-agenda-files '("~/.org/notes.org"))
  '(package-selected-packages '(elixir-mode which-key magit)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
