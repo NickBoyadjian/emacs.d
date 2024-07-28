@@ -45,6 +45,9 @@
   ;; Make the title bar look good
   (add-to-list 'default-frame-alist '(ns-transparent-titlebar . t))
   (add-to-list 'default-frame-alist '(ns-appearance . dark))
+  ;; Highlight current linep
+  (global-hl-line-mode t)
+  (set-face-background hl-line-face "#151515")
 #+end_src
 ** UTF-8
 #+begin_src emacs-lisp
@@ -406,61 +409,48 @@
   ;;       orderless-component-separator #'orderless-escapable-split-on-space)
   (setq completion-styles '(orderless basic)
         completion-category-defaults nil
-        completion-category-overrides '((file (styles partial-completion))))
+        completion-category-overrides '((file (styles partial-completion)))))
 #+end_src
 ** Project search
 #+begin_src emacs-lisp
 (setf epa-pinentry-mode 'loopback)
 #+end_src
 ** Consult
-#+begin_src emacs-lisp
-  ;; Example configuration for Consult
-(use-package consult
-  ;; Enable automatic preview at point in the *Completions* buffer. This is
-  ;; relevant when you use the default completion UI.
-  :hook (completion-list-mode . consult-preview-at-point-mode)
-
-  ;; The :init configuration is always executed (Not lazy)
-  :init
-
-  ;; Optionally configure the register formatting. This improves the register
-  ;; preview for `consult-register', `consult-register-load',
-  ;; `consult-register-store' and the Emacs built-ins.
-  (setq register-preview-delay 0.5
-        register-preview-function #'consult-register-format)
-
-  ;; Optionally tweak the register preview window.
-  ;; This adds thin lines, sorting and hides the mode line of the window.
-  (advice-add #'register-preview :override #'consult-register-window)
-
-  ;; Use Consult to select xref locations with preview
-  (setq xref-show-xrefs-function #'consult-xref
-        xref-show-definitions-function #'consult-xref)
-
-  ;; Configure other variables and modes in the :config section,
-  ;; after lazily loading the package.
-  :config
-
-  ;; Optionally configure preview. The default value
-  ;; is 'any, such that any key triggers the preview.
-  ;; (setq consult-preview-key 'any)
-  ;; (setq consult-preview-key "M-.")
-  ;; (setq consult-preview-key '("S-<down>" "S-<up>"))
-  ;; For some commands and buffer sources it is useful to configure the
-  ;; :preview-key on a per-command basis using the `consult-customize' macro.
-  (consult-customize
-   consult-theme :preview-key '(:debounce 0.2 any)
-   consult-ripgrep consult-git-grep consult-grep
-   consult-bookmark consult-recent-file consult-xref
-   consult--source-bookmark consult--source-file-register
-   consult--source-recent-file consult--source-project-recent-file
-   ;; :preview-key "M-."
-   :preview-key '(:debounce 0.4 any))
-
-  ;; Optionally configure the narrowing key.
-  ;; Both < and C-+ work reasonably well.
-  (setq consult-narrow-key "<") ;; "C-+"
-))
+   #+begin_src emacs-lisp
+     (use-package consult
+       :bind  (;; Related to the control commands.
+	       ("<help> a" . consult-apropos)
+	       ("C-x b" . consult-buffer)
+	       ("C-x M-:" . consult-complex-command)
+	       ("C-c k" . consult-kmacro)
+	       ;; Related to the navigation.
+	       ("M-g a" . consult-org-agenda)
+	       ("M-g e" . consult-error)
+	       ("M-g g" . consult-goto-line)
+	       ("M-g h" . consult-org-heading)
+	       ("M-g i" . consult-imenu)
+	       ("M-g k" . consult-global-mark)
+	       ("M-g l" . consult-line)
+	       ("M-g m" . consult-mark)
+	       ("M-g o" . consult-outline)
+	       ("M-g I" . consult-project-imenu)
+	       ;; Related to the search and selection.
+	       ("M-s G" . consult-git-grep)
+	       ("M-s g" . consult-grep)
+	       ("M-s k" . consult-keep-lines)
+	       ("M-s l" . consult-locate)
+	       ("M-s m" . consult-multi-occur)
+	       ("M-s r" . consult-ripgrep)
+	       ("M-s u" . consult-focus-lines)
+	       ("M-s f" . consult-find))
+       :custom
+       (completion-in-region-function #'consult-completion-in-region)
+       (consult-narrow-key "<")
+       (consult-project-root-function #'projectile-project-root)
+       ;; Provides consistent display for both `consult-register' and the register
+       ;; preview when editing registers.
+       (register-preview-delay 0)
+       (register-preview-function #'consult-register-preview))
 #+end_src
 * Programming Languages
 ** Nix
@@ -705,57 +695,57 @@ Latest transient (bug elpaca)
 #+end_src
 * General (Keybindings)
   #+begin_src emacs-lisp
-    (use-package general
-      :ensure t
-      :config
+(use-package general
+  :ensure t
+  :config
 
-      (defvar-keymap prefix-buffer-map
-	:doc "Prefix key map for buffers."
-	"i" 'ibuffer
-	"d"  'kill-current-buffer
-	"b"  'consult-project-buffer
-	"B"  'consult-buffer
-	"p"  'Previous-buffer)
+  (defvar-keymap prefix-buffer-map
+    :doc "Prefix key map for buffers."
+    "i" 'ibuffer
+    "d"  'kill-current-buffer
+    "b"  'consult-project-buffer
+    "B"  'consult-buffer
+    "p"  'Previous-buffer)
 
-      (defvar-keymap prefix-window-map
-	:doc "Prefix key map for windows."
-	"c" 'split-window-right
-	"n" 'split-window-below
-	"d" 'delete-window
-	"o" 'ace-window)
+  (defvar-keymap prefix-window-map
+    :doc "Prefix key map for windows."
+    "c" 'split-window-right
+    "n" 'split-window-below
+    "d" 'delete-window
+    "o" 'ace-window)
 
-      (defvar-keymap prefix-project-map
-	:doc "Prefix key map for projects."
-	"p" 'project-switch-project
-	"f" 'project-find-file
-	"s" 'conult-grep)
+  (defvar-keymap prefix-project-map
+    :doc "Prefix key map for projects."
+    "p" 'project-switch-project
+    "f" 'project-find-file
+    "s" 'conult-grep)
 
-      (defvar-keymap prefix-search-map
-	:doc "Prefix key map for searching."
-	"p" 'consult-grep
-	"b" 'consult-line)
+  (defvar-keymap prefix-search-map
+    :doc "Prefix key map for searching."
+    "p" 'consult-grep
+    "b" 'consult-line)
 
-      (defvar-keymap prefix-open-map
-	:doc "Prefix key map for opening things."
-	"t" 'vterm
-	"p" 'treemacs)
+  (defvar-keymap prefix-open-map
+    :doc "Prefix key map for opening things."
+    "t" 'vterm
+    "p" 'treemacs)
 
-      (defvar-keymap prefix-map
-	:doc "My prefix key map."
-	"b" prefix-buffer-map
-	"w" prefix-window-map
-	"p" prefix-project-map
-	"o" prefix-open-map
-	"s" prefix-search-map)
+  (defvar-keymap prefix-map
+    :doc "My prefix key map."
+    "b" prefix-buffer-map
+    "w" prefix-window-map
+    "p" prefix-project-map
+    "o" prefix-open-map
+    "s" prefix-search-map)
 
-      (which-key-add-keymap-based-replacements prefix-map
-	"b" `("Buffer" . ,prefix-buffer-map)
-	"w" `("Window" . ,prefix-window-map)
-	"p" `("Project" . ,prefix-project-map)
-	"o" `("Open" . ,prefix-open-map)
-	"s" `("Search" . ,prefix-search-map))
+  (which-key-add-keymap-based-replacements prefix-map
+    "b" `("Buffer" . ,prefix-buffer-map)
+    "w" `("Window" . ,prefix-window-map)
+    "p" `("Project" . ,prefix-project-map)
+    "o" `("Open" . ,prefix-open-map)
+    "s" `("Search" . ,prefix-search-map))
 
-      (keymap-set global-map "C-." prefix-map)
-      )
+  (keymap-set global-map "C-." prefix-map)
+  )
 #+end_src
 
