@@ -52,7 +52,7 @@
   (add-to-list 'default-frame-alist '(ns-appearance . dark))
   ;; Highlight current linep
   (global-hl-line-mode t)
-  (set-face-background hl-line-face "#151515")
+  (set-face-background hl-line-face "#191919")
 #+end_src
 ** UTF-8
 #+begin_src emacs-lisp
