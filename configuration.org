@@ -503,6 +503,16 @@
        (register-preview-delay 0)
        (register-preview-function #'consult-register-preview))
 #+end_src
+** Marginalia
+   Add annotations to the mini buffer
+   #+begin_src emacs-lisp
+     (use-package marginalia
+       :init
+       (marginalia-mode 1)
+       :bind (:map minibuffer-local-map
+                   ("M-A" . marginalia-cycle)
+                   ("M-A" . marginalia-cycle)))
+#+end_src
 * Programming Languages
 ** Nix
    #+begin_src emacs-lisp
