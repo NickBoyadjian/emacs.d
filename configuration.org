@@ -330,11 +330,27 @@
       :ensure t
       :config
       (apheleia-global-mode))
+
+    (use-package prettier
+      :config
+      (add-hook 'js2-mode-hook 'prettier-js-mode)
+      (add-hook 'web-mode-hook 'prettier-js-mode))
 #+end_src
 * Text editing
 ** Delimiter pairs
   #+begin_src emacs_lisp
 (electric-pair-mode t)
+
+(use-package smartparens
+  :config
+  (require 'smartparens-config)
+  :bind
+  (:map smartparens-mode-map
+        ("C-)" . sp-forward-slurp-sexp)
+        ("C-(" . sp-forward-barf-sexp)
+        ("C-{" . sp-backward-slurp-sexp)
+        ("C-}" . sp-backward-barf-sexp))
+  :hook   (prog-mode . smartparens-mode))
 #+end_src
 ** Mac OS
    #+begin_src emacs-lisp
