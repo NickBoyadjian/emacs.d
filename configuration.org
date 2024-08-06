@@ -367,7 +367,18 @@
        :config
        (global-set-key (kbd "C-;") 'avy-goto-char))
 #+end_src
+** Spaces over tabs
+   #+begin_src emacs-lisp
+(setq-default indent-tabs-mode nil)
+(setq-default tab-width 2)
+#+end_src
 * Org mode
+  #+begin_src emacs-lisp
+(use-package org
+  :ensure nil
+  :custom
+    (org-confirm-babel-evaluate nil))
+#+end_src
 ** Org modern
 #+begin_src emacs-lisp
   (use-package org-modern
