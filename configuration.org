@@ -767,91 +767,50 @@ Latest transient (bug elpaca)
 #+end_src
 * Corfu (auto-complete)
   #+begin_src emacs-lisp
-	(use-package corfu
-	  ;; Optional customizations
-	  ;; :custom
-	  ;; (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
-	  ;; (corfu-auto t)                 ;; Enable auto completion
-	  ;; (corfu-separator ?\s)          ;; Orderless field separator
-	  ;; (corfu-quit-at-boundary nil)   ;; Never quit at completion boundary
-	  ;; (corfu-quit-no-match nil)      ;; Never quit, even if there is no match
-	  ;; (corfu-preview-current nil)    ;; Disable current candidate preview
-	  ;; (corfu-preselect 'prompt)      ;; Preselect the prompt
-	  ;; (corfu-on-exact-match nil)     ;; Configure handling of exact matches
-	  ;; (corfu-scroll-margin 5)        ;; Use scroll margin
+    (use-package corfu
+      :init
+      (global-corfu-mode))
 
-	  ;; Enable Corfu only for certain modes.
-	  ;; :hook ((prog-mode . corfu-mode)
-	  ;;        (shell-mode . corfu-mode)
-	  ;;        (eshell-mode . corfu-mode))
+    (use-package emacs
+      :ensure nil
+      :custom
+      ;; TAB cycle if there are only few candidates
+      ;; (completion-cycle-threshold 3)
 
-	  ;; Recommended: Enable Corfu globally.  This is recommended since Dabbrev can
-	  ;; be used globally (M-/).  See also the customization variable
-	  ;; `global-corfu-modes' to exclude certain modes.
-	  :init
-	  (global-corfu-mode)
+      ;; Enable indentation+completion using the TAB key.
+      ;; `completion-at-point' is often bound to M-TAB.
+      (tab-always-indent 'complete)
 
-	  :config
-	  (setq lsp-completion-provider :none)
-    (defun corfu-lsp-setup ()
-      (setq-local completion-styles '(orderless)
-		  completion-category-defaults nil))
-    (add-hook 'lsp-mode-hook #'corfu-lsp-setup)
-    )
+      ;; Emacs 30 and newer: Disable Ispell completion function. As an alternative,
+      ;; try `cape-dict'.
+      (text-mode-ispell-word-completion nil)
+
+      ;; Emacs 28 and newer: Hide commands in M-x which do not apply to the current
+      ;; mode.  Corfu commands are hidden, since they are not used via M-x. This
+      ;; setting is useful beyond Corfu.
+      (read-extended-command-predicate #'command-completion-default-include-p))
 #+end_src
-* General (Keybindings)
+* Verb (http)
   #+begin_src emacs-lisp
-(use-package general
-  :ensure t
-  :config
+    (use-package verb
+      :after org
+      :config
+  
+      (defun verb-graphql (rs)
+      "Transform verb RS to GraphQL request."
+      (let* ((before-body (oref rs body))
+             (splited-body (split-string before-body "\n\n"))
+             (query (nth 0 splited-body))
+             (variables (nth 1 splited-body))
+             (json-object-type 'alist)
+             (parsed-variables (if variables (json-parse-string variables) '()))
+             (new-body (json-encode `((query . ,query) (variables . ,parsed-variables)))))
+        (oset rs body new-body)
+        rs))
+  
+      (define-key org-mode-map (kbd "C-c C-r") verb-command-map)
+      (add-to-list 'org-babel-load-languages '(verb . t)))
 
-  (defvar-keymap prefix-buffer-map
-    :doc "Prefix key map for buffers."
-    "i" 'ibuffer
-    "d"  'kill-current-buffer
-    "b"  'consult-project-buffer
-    "B"  'consult-buffer
-    "p"  'Previous-buffer)
-
-  (defvar-keymap prefix-window-map
-    :doc "Prefix key map for windows."
-    "c" 'split-window-right
-    "n" 'split-window-below
-    "d" 'delete-window
-    "o" 'ace-window)
-
-  (defvar-keymap prefix-project-map
-    :doc "Prefix key map for projects."
-    "p" 'project-switch-project
-    "f" 'project-find-file
-    "s" 'conult-grep)
-
-  (defvar-keymap prefix-search-map
-    :doc "Prefix key map for searching."
-    "p" 'consult-grep
-    "b" 'consult-line)
-
-  (defvar-keymap prefix-open-map
-    :doc "Prefix key map for opening things."
-    "t" 'vterm
-    "p" 'treemacs)
-
-  (defvar-keymap prefix-map
-    :doc "My prefix key map."
-    "b" prefix-buffer-map
-    "w" prefix-window-map
-    "p" prefix-project-map
-    "o" prefix-open-map
-    "s" prefix-search-map)
-
-  (which-key-add-keymap-based-replacements prefix-map
-    "b" `("Buffer" . ,prefix-buffer-map)
-    "w" `("Window" . ,prefix-window-map)
-    "p" `("Project" . ,prefix-project-map)
-    "o" `("Open" . ,prefix-open-map)
-    "s" `("Search" . ,prefix-search-map))
-
-  (keymap-set global-map "C-." prefix-map)
-  )
+    (use-package ob-async
+      :after ob)
 #+end_src
-
