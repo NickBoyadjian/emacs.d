@@ -34,7 +34,12 @@
   (scroll-bar-mode -1)
   (setq visible-bell 1)
   (setq ring-bell-function 'ignore)
-  (global-display-line-numbers-mode)
+
+  ;; Line numbers
+  (set-fringe-mode '(0 . nil))
+  (setq display-line-numbers-width-start 1)
+  (add-hook 'prog-mode-hook 'display-line-numbers-mode)
+
   (when (display-graphic-p)
   ;; No title. See init.el for initial value.
   (setq-default frame-title-format nil)
