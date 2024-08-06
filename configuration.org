@@ -294,24 +294,35 @@
 #+end_src
 * LSP
   #+begin_src emacs-lisp
-    ;; (use-package lsp-mode
-    ;;   :ensure t
-    ;;   :config
-    ;;   (setq lsp-keymap-prefix "C-c l")
-    ;;   (setq lsp-modeline-code-actions-segments '(count icon name))
-
-    ;;   :init
-    ;;   '(lsp-mode))
-
-    ;; (use-package lsp-ui :commands lsp-ui-mode)
-    ;; (use-package lsp-treemacs :commands lsp-treemacs-errors-list)
-(with-eval-after-load 'eglot
-  (setf (alist-get 'elixir-mode eglot-server-programs)
-        (if (and (fboundp 'w32-shell-dos-semantics)
-                 (w32-shell-dos-semantics))
-            '("language_server.bat")
-          (eglot-alternatives
-           '("language_server.sh" "start_lexical.sh")))))
+    (use-package eglot
+      :ensure nil
+      :bind
+      (:map eglot-mode-map
+      ("C-c e a" . eglot-code-actions)
+      ("C-c e f" . eglot-format)
+      ("C-c e r" . eglot-rename)
+      ("C-c e R" . eglot-reconnect)
+      ("C-c e o" . eglot-code-action-organize-imports)
+      ("C-c e D" . eglot-find-declaration)
+      ("C-c e i" . eglot-find-implementation)
+      ("C-c e d" . eglot-find-typeDefinition)
+      ("C-c e h" . eldoc))
+      :custom
+      (eglot-autoshutdown t)
+      (add-to-list 'eglot-server-programs '(elixir-mode "~/projects/nick/emacs.d/elixir-ls/release/language_server.sh"))
+      (add-to-list 'eglot-server-programs '(js2-mode . ("~/.asdf/shims/typescript-language-server" "--stdio")))
+      (add-hook 'elixir-mode-hook 'eglot-ensure)
+      (add-hook 'js2-mode-hook 'eglot-ensure)
+      )
+#+end_src
+* Project Management
+** Project package config
+  #+begin_src emacs-lisp
+    (use-package project
+      :ensure nil
+      :custom ((project-compilation-buffer-name-function
+                'project-prefixed-buffer-name))
+      :config)
 #+end_src
 * Formatting
   #+begin_src emacs-lisp
