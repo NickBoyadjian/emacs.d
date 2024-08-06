@@ -543,7 +543,20 @@
 	 (newline-and-indent)
 	 (insert "|> ")))
 #+end_src
+** Javascript
+I want indentation of 2 for json/js.
+#+BEGIN_SRC emacs-lisp
+(setq-default js-indent-level 2)
+#+END_SRC
+
+#+begin_src emacs-lisp
+(use-package js2-mode
+  :ensure t
+  :mode "\\.js\\'"
+  :config (js2-imenu-extras-setup))
+#+end_src
 * Git
+** Magit fix (it's broken in elpaca
   Latest seq for transient (with workaround due to a bug on elpaca)
   #+begin_src emacs-lisp
 (defun +elpaca-unload-seq (e)
