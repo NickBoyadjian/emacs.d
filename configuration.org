@@ -577,10 +577,42 @@ Latest transient (bug elpaca)
 (use-package transient)
 #+end_src
 
-Latest transient (bug elpaca)
+** Magit
   #+begin_src emacs-lisp
 (use-package magit
   :bind ("C-x g" . magit-status))
+#+end_src
+** Git gutter
+   #+begin_src emacs-lisp
+     (use-package git-gutter
+       :hook (prog-mode . git-gutter-mode)
+       :config
+       (custom-set-variables
+        '(git-gutter:modified-sign "|") ;; two space
+        '(git-gutter:added-sign "+")    ;; multiple character is OK
+        '(git-gutter:deleted-sign "-")
+        '(git-gutter:unchanged "  "))
+
+       (set-face-foreground 'git-gutter:modified "orange")
+       (set-face-foreground 'git-gutter:added "green")
+       (set-face-foreground 'git-gutter:deleted "red"))
+#+end_src
+** Blamer
+   Show git info in buffer
+   #+begin_src emacs-lisp
+     (use-package blamer
+       :ensure t
+       :bind (("s-i" . blamer-show-commit-info)
+              ("C-c i" . blamer-show-posframe-commit-info))
+       :defer 20
+       :custom
+       (blamer-idle-time 0.3)
+       (blamer-min-offset 70)
+       :custom-face
+       (blamer-face ((t :foreground "#7a88cf"
+                         :background nil
+                         :height 140
+                         :italic t))))
 #+end_src
 * Which key
   #+begin_src emacs-lisp
