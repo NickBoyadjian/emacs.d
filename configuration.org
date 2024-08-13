@@ -50,6 +50,7 @@
   ;; Make the title bar look good
   (add-to-list 'default-frame-alist '(ns-transparent-titlebar . t))
   (add-to-list 'default-frame-alist '(ns-appearance . dark))
+  (global-eldoc-mode -1)
 #+end_src
 ** UTF-8
 #+begin_src emacs-lisp
@@ -65,23 +66,41 @@
   (set-default-coding-systems 'utf-8)
 #+end_src
 
-* Modeline
+* UI
+** Modeline
 #+begin_src emacs-lisp
   (use-package moody
+    :ensure t
     :config
-    (add-hook 'minimap-sb-mode-hook (lambda () (setq mode-line-format nil)))
     (setq x-underline-at-descent-line t)
+
+    (setq-default mode-line-format
+                  '(" "
+                    mode-line-modified 
+                    mode-line-front-space
+                    mode-line-client
+                    mode-line-frame-identification
+                    mode-line-buffer-identification
+                    " "
+                    mode-line-position
+                    (vc-mode vc-mode)
+                    (multiple-cursors-mode mc/mode-line)
+                    " " mode-line-modes
+                    mode-line-end-spaces))
+
+    (setq global-mode-string (remove 'display-time-string global-mode-string))
+
     (moody-replace-mode-line-buffer-identification)
-    (moody-replace-vc-mode)
-    (moody-replace-eldoc-minibuffer-message-function))
+    (moody-replace-eldoc-minibuffer-message-function)
+    (moody-replace-vc-mode))
 
   (use-package minions
     :ensure t
     :config
     (minions-mode))
 #+end_src
-* Theme
-** Frame
+** Theme
+*** Frame
 #+begin_src emacs-lisp
   (when (display-graphic-p)
     ;; No title. See init.el for initial value.
@@ -112,7 +131,7 @@
     (set-frame-parameter nil 'internal-border-width 0)
     (set-frame-position (selected-frame) 15 53))
 #+end_src
-** Material
+*** Material
 #+begin_src emacs-lisp
   (use-package material-theme
     :ensure t
@@ -293,6 +312,32 @@
           (set-face-attribute atom nil
             :underline underline)))))))
 #+end_src
+** Tab-bar
+#+begin_src emacs-lisp
+(use-package vim-tab-bar
+  :commands vim-tab-bar-mode
+  :hook
+  (after-init . vim-tab-bar-mode))
+#+end_src
+** Dashboard
+  #+begin_src emacs-lisp
+(use-package dashboard
+  :custom
+  (dashboard-projects-backend 'project-el)
+  (dashboard-items '((recents  . 5)
+                     (projects . 5)
+                     (bookmarks . 5)
+                     (agenda . 5)))
+  (dashboard-startup-banner 'logo)
+  (dashboard-center-content t)
+  (dashboard-display-icons-p t)
+  (dashboard-icon-type 'nerd-icons)
+  (dashboard-set-heading-icons t)
+  (dashboard-set-file-icons t)
+  (initial-buffer-choice (lambda () (get-buffer-create "*dashboard*")))
+  :config
+  (dashboard-setup-startup-hook))
+#+end_src
 * LSP
   #+begin_src emacs-lisp
     (use-package eglot
@@ -338,6 +383,47 @@
            (unless (eq ibuffer-sorting-mode 'alphabetic)
              (ibuffer-do-sort-by-alphabetic)))))
 #+end_src
+** Tabspaces
+   #+begin_src emacs-lisp
+     (use-package tabspaces
+       :hook (after-init . tabspaces-mode) ;; use this only if you want the minor-mode loaded at startup. 
+       :commands (tabspaces-switch-or-create-workspace
+                  tabspaces-open-or-create-project-and-workspace)
+       :custom
+       (tabspaces-use-filtered-buffers-as-default t)
+       (tabspaces-default-tab "Default")
+       (tabspaces-remove-to-default t)
+       (tabspaces-include-buffers '("*scratch*"))
+       ;; (tabspaces-initialize-project-with-todo t)
+       ;; (tabspaces-todo-file-name "project-todo.org")
+  
+       ;; sessions
+       (tabspaces-session t)
+       (tabspaces-session-auto-restore t)
+
+       :config
+
+       ;; Filter Buffers for Consult-Buffer
+
+       (with-eval-after-load 'consult
+         ;; hide full buffer list (still available with "b" prefix)
+         (consult-customize consult--source-buffer :hidden t :default nil)
+         ;; set consult-workspace buffer list
+         (defvar consult--source-workspace
+           (list :name     "Workspace Buffers"
+                 :narrow   ?w
+                 :history  'buffer-name-history
+                 :category 'buffer
+                 :state    #'consult--buffer-state
+                 :default  t
+                 :items    (lambda () (consult--buffer-query
+                                       :predicate #'tabspaces--local-buffer-p
+                                       :sort 'visibility
+                                       :as #'buffer-name)))
+
+           "Set workspace buffer list for consult-buffer.")
+         (add-to-list 'consult-buffer-sources 'consult--source-workspace)))
+#+end_src
 * Formatting
   #+begin_src emacs-lisp
     (use-package apheleia
@@ -380,6 +466,15 @@
        :ensure t
        :config
        (global-set-key (kbd "C-;") 'avy-goto-char))
+#+end_src
+** Multiple cursors
+#+begin_src emacs-lisp
+  (use-package multiple-cursors
+    :config
+    (global-set-key (kbd "C-S-c C-S-c") 'mc/edit-lines)
+    (global-set-key (kbd "C->") 'mc/mark-next-like-this)
+    (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
+    (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this))
 #+end_src
 ** Spaces over tabs
    #+begin_src emacs-lisp
@@ -768,25 +863,6 @@ Latest transient (bug elpaca)
       :after (treemacs)
       :ensure t
       :config (treemacs-set-scope-type 'Tabs))
-#+end_src
-* Dashboard
-  #+begin_src emacs-lisp
-(use-package dashboard
-  :custom
-  (dashboard-projects-backend 'project-el)
-  (dashboard-items '((recents  . 5)
-                     (projects . 5)
-                     (bookmarks . 5)
-                     (agenda . 5)))
-  (dashboard-startup-banner 'logo)
-  (dashboard-center-content t)
-  (dashboard-display-icons-p t)
-  (dashboard-icon-type 'nerd-icons)
-  (dashboard-set-heading-icons t)
-  (dashboard-set-file-icons t)
-  (initial-buffer-choice (lambda () (get-buffer-create "*dashboard*")))
-  :config
-  (dashboard-setup-startup-hook))
 #+end_src
 * Vterm
   #+begin_src emacs-lisp

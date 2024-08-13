@@ -3,7 +3,12 @@
 (scroll-bar-mode -1)
 (setq visible-bell 1)
 (setq ring-bell-function 'ignore)
-(global-display-line-numbers-mode)
+
+;; Line numbers
+(set-fringe-mode '(0 . nil))
+(setq display-line-numbers-width-start 1)
+(add-hook 'prog-mode-hook 'display-line-numbers-mode)
+
 (when (display-graphic-p)
 ;; No title. See init.el for initial value.
 (setq-default frame-title-format nil)
@@ -26,12 +31,42 @@
 (set-language-environment "UTF-8")
 (set-default-coding-systems 'utf-8)
 
+;; (use-package moody
+;;   :config
+;;   (add-hook 'minimap-sb-mode-hook (lambda () (setq mode-line-format nil)))
+;;   (setq x-underline-at-descent-line t)
+;;   (moody-replace-mode-line-buffer-identification)
+;;   (moody-replace-vc-mode)
+;;   (moody-replace-eldoc-minibuffer-message-function))
+
+
 (use-package moody
+  :ensure t
   :config
   (setq x-underline-at-descent-line t)
+
+  (setq-default mode-line-format
+                '(" "
+                  mode-line-front-space
+                  mode-line-client
+                  mode-line-frame-identification
+                  mode-line-buffer-identification
+                  " "
+                  mode-line-position
+                  (vc-mode vc-mode)
+                  (multiple-cursors-mode mc/mode-line)
+                  " " mode-line-modes
+                  mode-line-end-spaces))
+
+  (setq global-mode-string (remove 'display-time-string global-mode-string))
+
   (moody-replace-mode-line-buffer-identification)
-  (moody-replace-vc-mode)
-  (moody-replace-eldoc-minibuffer-message-function))
+  (moody-replace-vc-mode))
+
+(use-package minions
+  :ensure t
+  :config
+  (minions-mode))
 
 (when (display-graphic-p)
   ;; No title. See init.el for initial value.
@@ -70,197 +105,223 @@
   :init
   (defun ar/load-material-org-present-tweaks ()
     (with-eval-after-load 'frame
-      (set-cursor-color "#2BA3FF"))
+(set-cursor-color "#2BA3FF"))
 
     (with-eval-after-load 'faces
-      (set-face-attribute 'org-level-1 nil :foreground "#ff69b4" :background 'unspecified :box nil)
-      (set-face-attribute 'org-level-2 nil :inherit 'lisp-extra-font-lock-quoted :foreground 'unspecified :background 'unspecified :box nil)
-      (set-face-attribute 'org-block nil :background "grey11" :box nil)))
+(set-face-attribute 'org-level-1 nil :foreground "#ff69b4" :background 'unspecified :box nil)
+(set-face-attribute 'org-level-2 nil :inherit 'lisp-extra-font-lock-quoted :foreground 'unspecified :background 'unspecified :box nil)
+(set-face-attribute 'org-block nil :background "grey11" :box nil)))
 
   (defun ar/drop-material-org-present-tweaks ()
     (with-eval-after-load 'frame
-      (set-cursor-color "royal blue"))
+(set-cursor-color "royal blue"))
 
     (with-eval-after-load 'faces
-      (set-face-attribute 'org-level-1 nil :foreground 'unspecified :background 'unspecified :box nil)
-      (set-face-attribute 'org-level-2 nil :inherit nil :foreground 'unspecified :background 'unspecified :box nil)
-      (set-face-attribute 'org-block nil :background 'unspecified :box nil)))
+(set-face-attribute 'org-level-1 nil :foreground 'unspecified :background 'unspecified :box nil)
+(set-face-attribute 'org-level-2 nil :inherit nil :foreground 'unspecified :background 'unspecified :box nil)
+(set-face-attribute 'org-block nil :background 'unspecified :box nil)))
 
   (defun ar/load-material-org-tweaks ()
     (with-eval-after-load 'frame
-      (set-cursor-color "orange"))
+(set-cursor-color "orange"))
 
     (with-eval-after-load 'faces
-      (set-face-attribute 'header-line nil :background "#212121" :foreground "dark grey")
-      (set-face-attribute 'internal-border nil :background "#212121")
-      ;; From https://gist.github.com/huytd/6b785bdaeb595401d69adc7797e5c22c#file-customized-org-mode-theme-el
-      (set-face-attribute 'default nil :stipple nil :background "#212121" :foreground "#eeffff" :inverse-video nil
-			  ;; :family "Menlo" ;; or Meslo if unavailable: https://github.com/andreberg/Meslo-Font
-			  ;; :family "Hack" ;; brew tap homebrew/cask-fonts && brew cask install font-hack
-			  :family "JetBrains Mono" ;; brew tap homebrew/cask-fonts && brew install --cask font-jetbrains-mono
-			  ;; :family "mononoki" ;; https://madmalik.github.io/mononoki/ or sudo apt-get install fonts-mononoki
-			  :box nil :strike-through nil :overline nil :underline nil :slant 'normal :weight 'normal
-			  :width 'normal :foundry "nil")
-      ;; Enable rendering SF symbols on macOS.
-      (when (memq system-type '(darwin))
-	(set-fontset-font t nil "SF Pro Display" nil 'append))
+(set-face-attribute 'header-line nil :background "#212121" :foreground "dark grey")
+(set-face-attribute 'internal-border nil :background "#212121")
+;; From https://gist.github.com/huytd/6b785bdaeb595401d69adc7797e5c22c#file-customized-org-mode-theme-el
+(set-face-attribute 'default nil :stipple nil :background "#212121" :foreground "#eeffff" :inverse-video nil
+        ;; :family "Menlo" ;; or Meslo if unavailable: https://github.com/andreberg/Meslo-Font
+        ;; :family "Hack" ;; brew tap homebrew/cask-fonts && brew cask install font-hack
+        :family "JetBrains Mono" ;; brew tap homebrew/cask-fonts && brew install --cask font-jetbrains-mono
+        ;; :family "mononoki" ;; https://madmalik.github.io/mononoki/ or sudo apt-get install fonts-mononoki
+        :box nil :strike-through nil :overline nil :underline nil :slant 'normal :weight 'normal
+        :width 'normal :foundry "nil")
+;; Highlight current linep
+(global-hl-line-mode t)
+(set-face-background hl-line-face "#191919")
+;; Enable rendering SF symbols on macOS.
+(when (memq system-type '(darwin))
+  (set-fontset-font t nil "SF Pro Display" nil 'append))
 
-      ;; Emoji's: welcome back to Emacs
-      ;; https://github.crookster.org/emacs27-from-homebrew-on-macos-with-emoji/
-      (when (>= emacs-major-version 27)
-	(set-fontset-font t 'symbol (font-spec :family "Apple Color Emoji") nil 'prepend))
+;; Emoji's: welcome back to Emacs
+;; https://github.crookster.org/emacs27-from-homebrew-on-macos-with-emoji/
+(when (>= emacs-major-version 27)
+  (set-fontset-font t 'symbol (font-spec :family "Apple Color Emoji") nil 'prepend))
 
-      ;; Hardcode region theme color.
-      (set-face-attribute 'region nil :background "#3f464c" :foreground "#eeeeec" :underline nil)
-      (set-face-attribute 'mode-line nil :background "#191919" :box nil)
+;; Hardcode region theme color.
+(set-face-attribute 'region nil :background "#3f464c" :foreground "#eeeeec" :underline nil)
+(set-face-attribute 'mode-line nil :background "#191919" :box nil)
 
-      ;; Styling moody https://github.com/tarsius/moody
-      (let ((line (face-attribute 'mode-line :underline)))
-	(set-face-attribute 'mode-line nil :overline   line)
-	(set-face-attribute 'mode-line-inactive nil :overline   line)
-	(set-face-attribute 'mode-line-inactive nil :underline  line)
-	(set-face-attribute 'mode-line nil :box nil)
-	(set-face-attribute 'mode-line-inactive nil :box nil)
-	(set-face-attribute 'mode-line-inactive nil :background "#212121" :foreground "#5B6268")))
+;; Styling moody https://github.com/tarsius/moody
+(let ((line (face-attribute 'mode-line :underline)))
+  (set-face-attribute 'mode-line nil :overline   line)
+  (set-face-attribute 'mode-line-inactive nil :overline   line)
+  (set-face-attribute 'mode-line-inactive nil :underline  line)
+  (set-face-attribute 'mode-line nil :box nil)
+  (set-face-attribute 'mode-line-inactive nil :box nil)
+  (set-face-attribute 'mode-line-inactive nil :background "#212121" :foreground "#5B6268")))
 
     (with-eval-after-load 'font-lock
-      ;; brew install font-iosevka-aile
-      ;; (set-face-attribute 'font-lock-comment-face nil :font "Iosevka Aile")
-      (set-face-attribute 'font-lock-comment-face nil :font "JetBrains Mono")
-      (set-face-attribute 'font-lock-constant-face nil :foreground "#C792EA")
-      (set-face-attribute 'font-lock-keyword-face nil :foreground "#2BA3FF" :slant 'italic)
-      (set-face-attribute 'font-lock-preprocessor-face nil :inherit 'bold :foreground "#2BA3FF" :slant 'italic :weight 'normal)
-      (set-face-attribute 'font-lock-string-face nil :foreground "#C3E88D")
-      (set-face-attribute 'font-lock-type-face nil :foreground "#FFCB6B")
-      (set-face-attribute 'font-lock-variable-name-face nil :foreground "#FF5370"))
+;; brew install font-iosevka-aile
+;; (set-face-attribute 'font-lock-comment-face nil :font "Iosevka Aile")
+(set-face-attribute 'font-lock-comment-face nil :font "JetBrains Mono")
+(set-face-attribute 'font-lock-constant-face nil :foreground "#C792EA")
+(set-face-attribute 'font-lock-keyword-face nil :foreground "#2BA3FF" :slant 'italic)
+(set-face-attribute 'font-lock-preprocessor-face nil :inherit 'bold :foreground "#2BA3FF" :slant 'italic :weight 'normal)
+(set-face-attribute 'font-lock-string-face nil :foreground "#C3E88D")
+(set-face-attribute 'font-lock-type-face nil :foreground "#FFCB6B")
+(set-face-attribute 'font-lock-variable-name-face nil :foreground "#FF5370"))
 
     (with-eval-after-load 'em-prompt
-      (set-face-attribute 'eshell-prompt nil :foreground "#eeffff"))
+(set-face-attribute 'eshell-prompt nil :foreground "#eeffff"))
 
     (with-eval-after-load 'company
-      (set-face-attribute 'company-preview-search nil :foreground "sandy brown" :background 'unspecified)
-      (set-face-attribute 'company-preview-common nil :inherit 'default :foreground 'unspecified :background "#212121"))
+(set-face-attribute 'company-preview-search nil :foreground "sandy brown" :background 'unspecified)
+(set-face-attribute 'company-preview-common nil :inherit 'default :foreground 'unspecified :background "#212121"))
 
     (with-eval-after-load 'company-box
-      (set-face-attribute 'company-box-candidate  nil :inherit 'default :foreground "#eeffff" :background "#212121" :box nil)
-      (set-face-attribute 'company-box-background nil :inherit 'default :background "#212121" :box nil)
-      (set-face-attribute 'company-box-annotation nil :inherit 'company-tooltip-annotation :background "#212121" :foreground "dim gray")
-      (set-face-attribute 'company-box-selection nil :inherit 'company-tooltip-selection :foreground "sandy brown"))
+(set-face-attribute 'company-box-candidate  nil :inherit 'default :foreground "#eeffff" :background "#212121" :box nil)
+(set-face-attribute 'company-box-background nil :inherit 'default :background "#212121" :box nil)
+(set-face-attribute 'company-box-annotation nil :inherit 'company-tooltip-annotation :background "#212121" :foreground "dim gray")
+(set-face-attribute 'company-box-selection nil :inherit 'company-tooltip-selection :foreground "sandy brown"))
 
     (with-eval-after-load 'popup
-      (set-face-attribute 'popup-menu-face nil
-			  :foreground (face-foreground 'default)
-			  :background (face-background 'default))
-      (set-face-attribute 'popup-menu-selection-face nil
-			  :foreground "sandy brown"
-			  :background "dim gray"))
+(set-face-attribute 'popup-menu-face nil
+        :foreground (face-foreground 'default)
+        :background (face-background 'default))
+(set-face-attribute 'popup-menu-selection-face nil
+        :foreground "sandy brown"
+        :background "dim gray"))
 
     (with-eval-after-load 'paren
-      (set-face-attribute 'show-paren-match nil
-			  :background 'unspecified
-			  :foreground "#FA009A"))
+(set-face-attribute 'show-paren-match nil
+        :background 'unspecified
+        :foreground "#FA009A"))
 
     (with-eval-after-load 'org-indent
-      (set-face-attribute 'org-indent nil :background "#212121"))
+(set-face-attribute 'org-indent nil :background "#212121"))
 
     (with-eval-after-load 'org-faces
-      (set-face-attribute 'org-hide nil :foreground "#212121" :background "#212121" :strike-through nil)
-      (set-face-attribute 'org-done nil :foreground "#b9ccb2" :strike-through nil)
-      (set-face-attribute 'org-agenda-date-today nil :foreground "#Fb1d84")
-      (set-face-attribute 'org-agenda-done nil :foreground "#b9ccb2" :strike-through nil)
-      (set-face-attribute 'org-table nil :background 'unspecified)
-      (set-face-attribute 'org-code nil :background 'unspecified)
-      (set-face-attribute 'org-level-1 nil :background 'unspecified :box nil)
-      (set-face-attribute 'org-level-2 nil :background 'unspecified :box nil)
-      (set-face-attribute 'org-level-3 nil :background 'unspecified :box nil)
-      (set-face-attribute 'org-level-4 nil :background 'unspecified :box nil)
-      (set-face-attribute 'org-level-5 nil :background 'unspecified :box nil)
-      (set-face-attribute 'org-level-6 nil :background 'unspecified :box nil)
-      (set-face-attribute 'org-level-7 nil :background 'unspecified :box nil)
-      (set-face-attribute 'org-level-8 nil :background 'unspecified :box nil)
-      (set-face-attribute 'org-block-begin-line nil :background 'unspecified :box nil)
-      (set-face-attribute 'org-block-end-line nil :background 'unspecified :box nil)
-      (set-face-attribute 'org-block nil :background 'unspecified :box nil))
+(set-face-attribute 'org-hide nil :foreground "#212121" :background "#212121" :strike-through nil)
+(set-face-attribute 'org-done nil :foreground "#b9ccb2" :strike-through nil)
+(set-face-attribute 'org-agenda-date-today nil :foreground "#Fb1d84")
+(set-face-attribute 'org-agenda-done nil :foreground "#b9ccb2" :strike-through nil)
+(set-face-attribute 'org-table nil :background 'unspecified)
+(set-face-attribute 'org-code nil :background 'unspecified)
+(set-face-attribute 'org-level-1 nil :background 'unspecified :box nil)
+(set-face-attribute 'org-level-2 nil :background 'unspecified :box nil)
+(set-face-attribute 'org-level-3 nil :background 'unspecified :box nil)
+(set-face-attribute 'org-level-4 nil :background 'unspecified :box nil)
+(set-face-attribute 'org-level-5 nil :background 'unspecified :box nil)
+(set-face-attribute 'org-level-6 nil :background 'unspecified :box nil)
+(set-face-attribute 'org-level-7 nil :background 'unspecified :box nil)
+(set-face-attribute 'org-level-8 nil :background 'unspecified :box nil)
+(set-face-attribute 'org-block-begin-line nil :background 'unspecified :box nil)
+(set-face-attribute 'org-block-end-line nil :background 'unspecified :box nil)
+(set-face-attribute 'org-block nil :background 'unspecified :box nil))
 
     (with-eval-after-load 'mu4e-vars
-      (set-face-attribute 'mu4e-header-highlight-face nil :inherit 'default :foreground "sandy brown" :weight 'bold :background 'unspecified)
-      (set-face-attribute 'mu4e-unread-face nil :inherit 'default :weight 'bold :foreground "#2BA3FF" :underline nil))
+(set-face-attribute 'mu4e-header-highlight-face nil :inherit 'default :foreground "sandy brown" :weight 'bold :background 'unspecified)
+(set-face-attribute 'mu4e-unread-face nil :inherit 'default :weight 'bold :foreground "#2BA3FF" :underline nil))
 
     (with-eval-after-load 'comint
-      (set-face-attribute 'comint-highlight-input nil
-			  :inherit 'default
-			  :foreground "sandy brown"
-			  :weight 'normal
-			  :background 'unspecified))
+(set-face-attribute 'comint-highlight-input nil
+        :inherit 'default
+        :foreground "sandy brown"
+        :weight 'normal
+        :background 'unspecified))
 
     ;; No color for fringe, blends with the rest of the window.
     (with-eval-after-load 'fringe
-      (set-face-attribute 'fringe nil
-			  :foreground (face-foreground 'default)
-			  :background (face-background 'default)))
+(set-face-attribute 'fringe nil
+        :foreground (face-foreground 'default)
+        :background (face-background 'default)))
 
     ;; No color for sp-pair-overlay-face.
     (with-eval-after-load 'smartparens
-      (set-face-attribute 'sp-pair-overlay-face nil
-			  :foreground (face-foreground 'default)
-			  :background (face-background 'default)))
+(set-face-attribute 'sp-pair-overlay-face nil
+        :foreground (face-foreground 'default)
+        :background (face-background 'default)))
 
     ;; Remove background so it doesn't look selected with region.
     ;; Make the foreground the same as `diredfl-flag-mark' (ie. orange).
     (with-eval-after-load 'diredfl
-      (set-face-attribute 'diredfl-flag-mark-line nil
-			  :foreground "orange"
-			  :background 'unspecified))
+(set-face-attribute 'diredfl-flag-mark-line nil
+        :foreground "orange"
+        :background 'unspecified))
 
     (with-eval-after-load 'dired-subtree
-      (set-face-attribute 'dired-subtree-depth-1-face nil
-			  :background 'unspecified)
-      (set-face-attribute 'dired-subtree-depth-2-face nil
-			  :background 'unspecified)
-      (set-face-attribute 'dired-subtree-depth-3-face nil
-			  :background 'unspecified)
-      (set-face-attribute 'dired-subtree-depth-4-face nil
-			  :background 'unspecified)
-      (set-face-attribute 'dired-subtree-depth-5-face nil
-			  :background 'unspecified)
-      (set-face-attribute 'dired-subtree-depth-6-face nil
-			  :background 'unspecified))
+(set-face-attribute 'dired-subtree-depth-1-face nil
+        :background 'unspecified)
+(set-face-attribute 'dired-subtree-depth-2-face nil
+        :background 'unspecified)
+(set-face-attribute 'dired-subtree-depth-3-face nil
+        :background 'unspecified)
+(set-face-attribute 'dired-subtree-depth-4-face nil
+        :background 'unspecified)
+(set-face-attribute 'dired-subtree-depth-5-face nil
+        :background 'unspecified)
+(set-face-attribute 'dired-subtree-depth-6-face nil
+        :background 'unspecified))
 
     ;; Trying out line underline (instead of wave).
     (mapatoms (lambda (atom)
-		(let ((underline nil))
-		  (when (and (facep atom)
-			     (setq underline
-				   (face-attribute atom
-						   :underline))
-			     (eq (plist-get underline :style) 'wave))
-		    (plist-put underline :style 'line)
-		    (set-face-attribute atom nil
-					:underline underline)))))))
+    (let ((underline nil))
+      (when (and (facep atom)
+           (setq underline
+           (face-attribute atom
+               :underline))
+           (eq (plist-get underline :style) 'wave))
+        (plist-put underline :style 'line)
+        (set-face-attribute atom nil
+          :underline underline)))))))
 
-;; (use-package lsp-mode
-    ;;   :ensure t
-    ;;   :config
-    ;;   (setq lsp-keymap-prefix "C-c l")
-    ;;   (setq lsp-modeline-code-actions-segments '(count icon name))
+(use-package eglot
+  :ensure nil
+  :bind
+  (:map eglot-mode-map
+  ("C-c e a" . eglot-code-actions)
+  ("C-c e f" . eglot-format)
+  ("C-c e r" . eglot-rename)
+  ("C-c e R" . eglot-reconnect)
+  ("C-c e o" . eglot-code-action-organize-imports)
+  ("C-c e D" . eglot-find-declaration)
+  ("C-c e i" . eglot-find-implementation)
+  ("C-c e d" . eglot-find-typeDefinition)
+  ("C-c e h" . eldoc))
+  :custom
+  (eglot-autoshutdown t)
+  :config
+  ;; Javascript
+  (add-hook 'js2-mode-hook 'eglot-ensure)
+  (add-to-list 'eglot-server-programs '((js2-mode) "typescript-language-server" "--stdio"))
+  ;; Elixir
+    (add-hook 'elixir-mode-hook 'eglot-ensure)
+    (add-to-list 'eglot-server-programs '(elixir-mode "~/projects/nick/emacs.d/elixir-ls/release/language_server.sh")))
 
-    ;;   :init
-    ;;   '(lsp-mode))
+(use-package project
+  :ensure nil
+  :custom ((project-compilation-buffer-name-function
+            'project-prefixed-buffer-name))
+  :config)
 
-    ;; (use-package lsp-ui :commands lsp-ui-mode)
-    ;; (use-package lsp-treemacs :commands lsp-treemacs-errors-list)
-(with-eval-after-load 'eglot
-  (setf (alist-get 'elixir-mode eglot-server-programs)
-        (if (and (fboundp 'w32-shell-dos-semantics)
-                 (w32-shell-dos-semantics))
-            '("language_server.bat")
-          (eglot-alternatives
-           '("language_server.sh" "start_lexical.sh")))))
+(use-package ibuffer-projectile
+  :config
+  (add-hook 'ibuffer-hook
+    (lambda ()
+      (ibuffer-projectile-set-filter-groups)
+      (unless (eq ibuffer-sorting-mode 'alphabetic)
+        (ibuffer-do-sort-by-alphabetic)))))
 
 (use-package apheleia
   :ensure t
   :config
   (apheleia-global-mode))
+
+(use-package prettier
+  :config
+  (add-hook 'js2-mode-hook 'prettier-js-mode)
+  (add-hook 'web-mode-hook 'prettier-js-mode))
 
 (defconst NB/IS-MACOS (eq system-type 'darwin))
 
@@ -272,6 +333,21 @@
   :ensure t
   :config
   (global-set-key (kbd "C-;") 'avy-goto-char))
+
+(setq-default indent-tabs-mode nil)
+(setq-default tab-width 2)
+
+(use-package expand-region
+  :bind ("C-=" . er/expand-region))
+
+(use-package surround
+  :ensure t
+  :bind-keymap ("C-c s" . surround-keymap))
+
+(use-package org
+  :ensure nil
+  :custom
+    (org-confirm-babel-evaluate nil))
 
 (use-package org-modern
 :ensure t
@@ -339,57 +415,55 @@
   ;;       orderless-component-separator #'orderless-escapable-split-on-space)
   (setq completion-styles '(orderless basic)
         completion-category-defaults nil
-        completion-category-overrides '((file (styles partial-completion))))
+        completion-category-overrides '((file (styles partial-completion)))))
 
 (setf epa-pinentry-mode 'loopback)
 
-;; Example configuration for Consult
 (use-package consult
-  ;; Enable automatic preview at point in the *Completions* buffer. This is
-  ;; relevant when you use the default completion UI.
-  :hook (completion-list-mode . consult-preview-at-point-mode)
+  :bind  (;; Related to the control commands.
+          ("C-c h" . consult-history)
+          ("C-c m" . consult-mode-command)
+          ("C-c b" . consult-bookmark)
+          ("C-c k" . consult-kmacro)
+          ;; Navigation
+          ("C-x M-:" . consult-complex-command)
+          ("C-x b". consult-buffer)
+          ("C-x 4 b". consult-buffer-other-window)
+          ("C-x 5 b". consult-buffer-other-frame)
+          ;; Goto map
+          ("M-g e" . consult-compile-error)
+          ("M-g g" . consult-goto-line)
+          ("M-g M-g" . consult-goto-line)
+          ("M-g o" . consult-outline)
+          ("M-g m" . consult-mark)
+          ("M-g k" . consult-global-mark)
+          ("M-g i" . consult-imenu)
+          ("M-g I" . consult-imenu-multi)
+          ("M-g !" . consult-flymake)
 
-  ;; The :init configuration is always executed (Not lazy)
+          ("M-s f" . consult-find)
+          ("M-s L" . consult-locate)
+          ("M-s g" . consult-grep)
+          ("M-s G" . consult-git-grep)
+          ("M-s r" . consult-ripgrep)
+          ("M-s l" . consult-line)
+          ("M-s k" . consult-keep-lines)
+          ("M-s u" . consult-focus-lines))
+  :custom
+  (completion-in-region-function #'consult-completion-in-region)
+  (consult-narrow-key "<")
+  (consult-project-root-function #'projectile-project-root)
+  ;; Provides consistent display for both `consult-register' and the register
+  ;; preview when editing registers.
+  (register-preview-delay 0)
+  (register-preview-function #'consult-register-preview))
+
+(use-package marginalia
   :init
-
-  ;; Optionally configure the register formatting. This improves the register
-  ;; preview for `consult-register', `consult-register-load',
-  ;; `consult-register-store' and the Emacs built-ins.
-  (setq register-preview-delay 0.5
-        register-preview-function #'consult-register-format)
-
-  ;; Optionally tweak the register preview window.
-  ;; This adds thin lines, sorting and hides the mode line of the window.
-  (advice-add #'register-preview :override #'consult-register-window)
-
-  ;; Use Consult to select xref locations with preview
-  (setq xref-show-xrefs-function #'consult-xref
-        xref-show-definitions-function #'consult-xref)
-
-  ;; Configure other variables and modes in the :config section,
-  ;; after lazily loading the package.
-  :config
-
-  ;; Optionally configure preview. The default value
-  ;; is 'any, such that any key triggers the preview.
-  ;; (setq consult-preview-key 'any)
-  ;; (setq consult-preview-key "M-.")
-  ;; (setq consult-preview-key '("S-<down>" "S-<up>"))
-  ;; For some commands and buffer sources it is useful to configure the
-  ;; :preview-key on a per-command basis using the `consult-customize' macro.
-  (consult-customize
-   consult-theme :preview-key '(:debounce 0.2 any)
-   consult-ripgrep consult-git-grep consult-grep
-   consult-bookmark consult-recent-file consult-xref
-   consult--source-bookmark consult--source-file-register
-   consult--source-recent-file consult--source-project-recent-file
-   ;; :preview-key "M-."
-   :preview-key '(:debounce 0.4 any))
-
-  ;; Optionally configure the narrowing key.
-  ;; Both < and C-+ work reasonably well.
-  (setq consult-narrow-key "<") ;; "C-+"
-))
+  (marginalia-mode 1)
+  :bind (:map minibuffer-local-map
+              ("M-A" . marginalia-cycle)
+              ("M-A" . marginalia-cycle)))
 
 (use-package nix-mode
   :ensure t
@@ -416,6 +490,16 @@
     (newline-and-indent)
     (insert "|> ")))
 
+(setq-default js-indent-level 2)
+
+(use-package js2-mode
+  :ensure t
+  :mode "\\.js\\'"
+  :config)
+
+(use-package prettier-js
+  :ensure t)
+
 (defun +elpaca-unload-seq (e)
   (and (featurep 'seq) (unload-feature 'seq t))
   (elpaca--continue-build e))
@@ -433,6 +517,33 @@
 (use-package magit
   :bind ("C-x g" . magit-status))
 
+(use-package git-gutter
+  :hook (prog-mode . git-gutter-mode)
+  :config
+  (custom-set-variables
+   '(git-gutter:modified-sign "|") ;; two space
+   '(git-gutter:added-sign "+")    ;; multiple character is OK
+   '(git-gutter:deleted-sign "-")
+   '(git-gutter:unchanged "  "))
+
+  (set-face-foreground 'git-gutter:modified "orange")
+  (set-face-foreground 'git-gutter:added "green")
+  (set-face-foreground 'git-gutter:deleted "red"))
+
+(use-package blamer
+  :ensure t
+  :bind (("s-i" . blamer-show-commit-info)
+         ("C-c i" . blamer-show-posframe-commit-info))
+  :defer 20
+  :custom
+  (blamer-idle-time 0.3)
+  (blamer-min-offset 70)
+  :custom-face
+  (blamer-face ((t :foreground "#7a88cf"
+                    :background nil
+                    :height 140
+                    :italic t))))
+
 (use-package which-key
   :ensure t
   :defer 10
@@ -449,58 +560,58 @@
   :config
   (progn
     (setq treemacs-collapse-dirs                   (if treemacs-python-executable 3 0)
-	  treemacs-deferred-git-apply-delay        0.5
-	  treemacs-directory-name-transformer      #'identity
-	  treemacs-display-in-side-window          t
-	  treemacs-eldoc-display                   'simple
-	  treemacs-file-event-delay                2000
-	  treemacs-file-extension-regex            treemacs-last-period-regex-value
-	  treemacs-file-follow-delay               0.2
-	  treemacs-file-name-transformer           #'identity
-	  treemacs-follow-after-init               t
-	  treemacs-expand-after-init               t
-	  treemacs-find-workspace-method           'find-for-file-or-pick-first
-	  treemacs-git-command-pipe                ""
-	  treemacs-goto-tag-strategy               'refetch-index
-	  treemacs-header-scroll-indicators        '(nil . "^^^^^^")
-	  treemacs-hide-dot-git-directory          t
-	  treemacs-indentation                     2
-	  treemacs-indentation-string              " "
-	  treemacs-is-never-other-window           nil
-	  treemacs-max-git-entries                 5000
-	  treemacs-missing-project-action          'ask
-	  treemacs-move-files-by-mouse-dragging    t
-	  treemacs-move-forward-on-expand          nil
-	  treemacs-no-png-images                   nil
-	  treemacs-no-delete-other-windows         t
-	  treemacs-project-follow-cleanup          nil
-	  treemacs-persist-file                    (expand-file-name ".cache/treemacs-persist" user-emacs-directory)
-	  treemacs-position                        'left
-	  treemacs-read-string-input               'from-child-frame
-	  treemacs-recenter-distance               0.1
-	  treemacs-recenter-after-file-follow      nil
-	  treemacs-recenter-after-tag-follow       nil
-	  treemacs-recenter-after-project-jump     'always
-	  treemacs-recenter-after-project-expand   'on-distance
-	  treemacs-litter-directories              '("/node_modules" "/.venv" "/.cask")
-	  treemacs-project-follow-into-home        nil
-	  treemacs-show-cursor                     nil
-	  treemacs-show-hidden-files               t
-	  treemacs-silent-filewatch                nil
-	  treemacs-silent-refresh                  nil
-	  treemacs-sorting                         'alphabetic-asc
-	  treemacs-select-when-already-in-treemacs 'move-back
-	  treemacs-space-between-root-nodes        t
-	  treemacs-tag-follow-cleanup              t
-	  treemacs-tag-follow-delay                1.5
-	  treemacs-text-scale                      nil
-	  treemacs-user-mode-line-format           nil
-	  treemacs-user-header-line-format         nil
-	  treemacs-wide-toggle-width               70
-	  treemacs-width                           35
-	  treemacs-width-increment                 1
-	  treemacs-width-is-initially-locked       t
-	  treemacs-workspace-switch-cleanup        nil)
+          treemacs-deferred-git-apply-delay        0.5
+          treemacs-directory-name-transformer      #'identity
+          treemacs-display-in-side-window          t
+          treemacs-eldoc-display                   'simple
+          treemacs-file-event-delay                2000
+          treemacs-file-extension-regex            treemacs-last-period-regex-value
+          treemacs-file-follow-delay               0.2
+          treemacs-file-name-transformer           #'identity
+          treemacs-follow-after-init               t
+          treemacs-expand-after-init               t
+          treemacs-find-workspace-method           'find-for-file-or-pick-first
+          treemacs-git-command-pipe                ""
+          treemacs-goto-tag-strategy               'refetch-index
+          treemacs-header-scroll-indicators        '(nil . "^^^^^^")
+          treemacs-hide-dot-git-directory          t
+          treemacs-indentation                     2
+          treemacs-indentation-string              " "
+          treemacs-is-never-other-window           nil
+          treemacs-max-git-entries                 5000
+          treemacs-missing-project-action          'ask
+          treemacs-move-files-by-mouse-dragging    t
+          treemacs-move-forward-on-expand          nil
+          treemacs-no-png-images                   nil
+          treemacs-no-delete-other-windows         t
+          treemacs-project-follow-cleanup          nil
+          treemacs-persist-file                    (expand-file-name ".cache/treemacs-persist" user-emacs-directory)
+          treemacs-position                        'left
+          treemacs-read-string-input               'from-child-frame
+          treemacs-recenter-distance               0.1
+          treemacs-recenter-after-file-follow      nil
+          treemacs-recenter-after-tag-follow       nil
+          treemacs-recenter-after-project-jump     'always
+          treemacs-recenter-after-project-expand   'on-distance
+          treemacs-litter-directories              '("/node_modules" "/.venv" "/.cask")
+          treemacs-project-follow-into-home        nil
+          treemacs-show-cursor                     nil
+          treemacs-show-hidden-files               t
+          treemacs-silent-filewatch                nil
+          treemacs-silent-refresh                  nil
+          treemacs-sorting                         'alphabetic-asc
+          treemacs-select-when-already-in-treemacs 'move-back
+          treemacs-space-between-root-nodes        t
+          treemacs-tag-follow-cleanup              t
+          treemacs-tag-follow-delay                1.5
+          treemacs-text-scale                      nil
+          treemacs-user-mode-line-format           nil
+          treemacs-user-header-line-format         nil
+          treemacs-wide-toggle-width               70
+          treemacs-width                           35
+          treemacs-width-increment                 1
+          treemacs-width-is-initially-locked       t
+          treemacs-workspace-switch-cleanup        nil)
 
     ;; The default width and height of the icons is 22 pixels. If you are
     ;; using a Hi-DPI display, uncomment this to double the icon size.
@@ -513,7 +624,7 @@
       (treemacs-git-commit-diff-mode t))
 
     (pcase (cons (not (null (executable-find "git")))
-		 (not (null treemacs-python-executable)))
+                 (not (null treemacs-python-executable)))
       (`(t . t)
        (treemacs-git-mode 'deferred))
       (`(t . _)
@@ -522,13 +633,13 @@
     (treemacs-hide-gitignored-files-mode nil))
   :bind
   (:map global-map
-	("M-0"       . treemacs-select-window)
-	("C-x t 1"   . treemacs-delete-other-windows)
-	("C-x t t"   . treemacs)
-	("C-x t d"   . treemacs-select-directory)
-	("C-x t B"   . treemacs-bookmark)
-	("C-x t C-t" . treemacs-find-file)
-	("C-x t M-t" . treemacs-find-tag)))
+        ("M-0"       . treemacs-select-window)
+        ("C-x t 1"   . treemacs-delete-other-windows)
+        ("C-x t t"   . treemacs)
+        ("C-x t d"   . treemacs-select-directory)
+        ("C-x t B"   . treemacs-bookmark)
+        ("C-x t C-t" . treemacs-find-file)
+        ("C-x t M-t" . treemacs-find-tag)))
 
 (use-package treemacs-projectile
   :after (treemacs projectile)
@@ -571,90 +682,56 @@
 
 (use-package vterm)
 
+(setq help-window-select t)
+
 (use-package switch-window
-  :bind ("C-x o" . switch-window))
+  :bind ("C-x o" . switch-window)
+  :config
+  (setq switch-window-shortcut-style 'qwerty))
+
+(keymap-global-set "C-x C-b" 'ibuffer)
 
 (use-package corfu
-      ;; Optional customizations
-      ;; :custom
-      ;; (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
-      ;; (corfu-auto t)                 ;; Enable auto completion
-      ;; (corfu-separator ?\s)          ;; Orderless field separator
-      ;; (corfu-quit-at-boundary nil)   ;; Never quit at completion boundary
-      ;; (corfu-quit-no-match nil)      ;; Never quit, even if there is no match
-      ;; (corfu-preview-current nil)    ;; Disable current candidate preview
-      ;; (corfu-preselect 'prompt)      ;; Preselect the prompt
-      ;; (corfu-on-exact-match nil)     ;; Configure handling of exact matches
-      ;; (corfu-scroll-margin 5)        ;; Use scroll margin
+  :init
+  (global-corfu-mode))
 
-      ;; Enable Corfu only for certain modes.
-      ;; :hook ((prog-mode . corfu-mode)
-      ;;        (shell-mode . corfu-mode)
-      ;;        (eshell-mode . corfu-mode))
+(use-package emacs
+  :ensure nil
+  :custom
+  ;; TAB cycle if there are only few candidates
+  ;; (completion-cycle-threshold 3)
 
-      ;; Recommended: Enable Corfu globally.  This is recommended since Dabbrev can
-      ;; be used globally (M-/).  See also the customization variable
-      ;; `global-corfu-modes' to exclude certain modes.
-      :init
-      (global-corfu-mode)
+  ;; Enable indentation+completion using the TAB key.
+  ;; `completion-at-point' is often bound to M-TAB.
+  (tab-always-indent 'complete)
 
-      :config
-      (setq lsp-completion-provider :none)
-(defun corfu-lsp-setup ()
-  (setq-local completion-styles '(orderless)
-	      completion-category-defaults nil))
-(add-hook 'lsp-mode-hook #'corfu-lsp-setup)
-)
+  ;; Emacs 30 and newer: Disable Ispell completion function. As an alternative,
+  ;; try `cape-dict'.
+  (text-mode-ispell-word-completion nil)
 
-(use-package general
-  :ensure t
+  ;; Emacs 28 and newer: Hide commands in M-x which do not apply to the current
+  ;; mode.  Corfu commands are hidden, since they are not used via M-x. This
+  ;; setting is useful beyond Corfu.
+  (read-extended-command-predicate #'command-completion-default-include-p))
+
+(use-package verb
+  :after org
   :config
 
-  (defvar-keymap prefix-buffer-map
-    :doc "Prefix key map for buffers."
-    "i" 'ibuffer
-    "d"  'kill-current-buffer
-    "b"  'consult-project-buffer
-    "B"  'consult-buffer
-    "p"  'Previous-buffer)
+  (defun verb-graphql (rs)
+  "Transform verb RS to GraphQL request."
+  (let* ((before-body (oref rs body))
+         (splited-body (split-string before-body "\n\n"))
+         (query (nth 0 splited-body))
+         (variables (nth 1 splited-body))
+         (json-object-type 'alist)
+         (parsed-variables (if variables (json-parse-string variables) '()))
+         (new-body (json-encode `((query . ,query) (variables . ,parsed-variables)))))
+    (oset rs body new-body)
+    rs))
 
-  (defvar-keymap prefix-window-map
-    :doc "Prefix key map for windows."
-    "c" 'split-window-right
-    "n" 'split-window-below
-    "d" 'delete-window
-    "o" 'ace-window)
+  (define-key org-mode-map (kbd "C-c C-r") verb-command-map)
+  (add-to-list 'org-babel-load-languages '(verb . t)))
 
-  (defvar-keymap prefix-project-map
-    :doc "Prefix key map for projects."
-    "p" 'project-switch-project
-    "f" 'project-find-file
-    "s" 'conult-grep)
-
-  (defvar-keymap prefix-search-map
-    :doc "Prefix key map for searching."
-    "p" 'consult-grep
-    "b" 'consult-line)
-
-  (defvar-keymap prefix-open-map
-    :doc "Prefix key map for opening things."
-    "t" 'vterm
-    "p" 'treemacs)
-
-  (defvar-keymap prefix-map
-    :doc "My prefix key map."
-    "b" prefix-buffer-map
-    "w" prefix-window-map
-    "p" prefix-project-map
-    "o" prefix-open-map
-    "s" prefix-search-map)
-
-  (which-key-add-keymap-based-replacements prefix-map
-    "b" `("Buffer" . ,prefix-buffer-map)
-    "w" `("Window" . ,prefix-window-map)
-    "p" `("Project" . ,prefix-project-map)
-    "o" `("Open" . ,prefix-open-map)
-    "s" `("Search" . ,prefix-search-map))
-
-  (keymap-set global-map "C-." prefix-map)
-  )
+(use-package ob-async
+  :after ob)
