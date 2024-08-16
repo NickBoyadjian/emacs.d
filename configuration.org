@@ -95,9 +95,15 @@
     (moody-replace-vc-mode))
 
   (use-package minions
-    :ensure t
     :config
     (minions-mode))
+
+  (use-package hide-mode-line
+    :config
+    (add-hook 'treemacs-mode-hook #'hide-mode-line-mode)
+    (add-hook 'vterm-mode-hook #'hide-mode-line-mode)
+    (add-hook 'magit-mode-hook #'hide-mode-line-mode)
+  )
 #+end_src
 ** Theme
 *** Frame
