@@ -288,17 +288,17 @@
 #+end_src
 ** Tab-bar
 #+begin_src emacs-lisp
-  ;; (custom-set-faces
-  ;;   (tab-bar ((t (:background "#191919" :foreground "#fff" :height 1.1 :padding 1))))
-  ;;   (tab-bar-tab ((t (:background "#191919" :foreground "#fff" :box (:line-width 3 :color "#191919" :style flat-button)))))
-  ;;   (tab-bar-tab-inactive ((t (:background "#191919" :foreground "#aaa")))))
+   (custom-set-faces
+    '(tab-bar ((t (:background "#191919" :foreground "#fff" :height 1.1 :padding 1))))
+    '(tab-bar-tab ((t (:background "#191919" :foreground "#fff" :box (:line-width 3 :color "#191919" :style flat-button)))))
+    '(tab-bar-tab-inactive ((t (:background "#191919" :foreground "#aaa")))))
 
-  ;; (setq tab-bar-tab-hints t)
-  ;; (setq tab-bar-show t)
-  ;; (setq tab-bar-position 'top)
-  ;; (setq tab-bar-close-button-show nil)
-  ;; (setq tab-bar-new-button-show nil)
-  ;; (setq tab-bar-auto-width nil)
+  (setq tab-bar-tab-hints t)
+  (setq tab-bar-show t)
+  (setq tab-bar-position 'top)
+  (setq tab-bar-close-button-show nil)
+  (setq tab-bar-new-button-show nil)
+  (setq tab-bar-auto-width nil)
 #+end_src
 ** Dashboard
   #+begin_src emacs-lisp
@@ -612,8 +612,8 @@
 
                ("M-s f" . consult-find)
                ("M-s L" . consult-locate)
-               ("M-s g" . consult-grep)
-               ("M-s G" . consult-git-grep)
+               ("M-s g" . consult-git-grep)
+               ("M-s G" . consult-grep)
                ("M-s r" . consult-ripgrep)
                ("M-s l" . consult-line)
                ("M-s k" . consult-keep-lines)
@@ -648,24 +648,25 @@
    #+begin_src emacs-lisp
      (use-package elixir-mode
        :ensure t
-       :custom
-       (lsp-elixir-server-command '("~/build/lexical/_build/dev/package/lexical/bin/start_lexical.sh")))
+       :init
+       (defun nb/enter-pipe ()
+         (interactive)
+         (let ((oldpos (point)))
+           (end-of-line)
+           (newline-and-indent)
+           (insert "|> ")))
+       :bind (("<C-return>" . nb/enter-pipe)))
 
-     (use-package exunit
-       :config
-       ;; fix broken dark test link
-       (custom-set-faces
-	'(ansi-color-black ((t (:background "MediumPurple2" :foreground "MediumPurple2")))))
-       :hook
-       (elixir-ts-mode . exunit-mode)
-       (elixir-mode . exunit-mode))
+       (use-package exunit
+         :config
+         ;; fix broken dark test link
+         (custom-set-faces
+          '(ansi-color-black ((t (:background "MediumPurple2" :foreground "MediumPurple2")))))
+         :hook
+         (elixir-ts-mode . exunit-mode)
+         (elixir-mode . exunit-mode))
 
-     (defun nick/enter-pipe ()
-       (interactive)
-       (let ((oldpos (point)))
-	 (end-of-line)
-	 (newline-and-indent)
-	 (insert "|> ")))
+
 #+end_src
 ** Javascript
 I want indentation of 2 for json/js.
