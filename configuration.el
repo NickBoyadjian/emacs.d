@@ -19,6 +19,7 @@
 ;; Make the title bar look good
 (add-to-list 'default-frame-alist '(ns-transparent-titlebar . t))
 (add-to-list 'default-frame-alist '(ns-appearance . dark))
+(global-eldoc-mode -1)
 
 (setopt default-process-coding-system '(utf-8-unix . utf-8-unix)
       locale-coding-system 'utf-8)
@@ -31,22 +32,13 @@
 (set-language-environment "UTF-8")
 (set-default-coding-systems 'utf-8)
 
-;; (use-package moody
-;;   :config
-;;   (add-hook 'minimap-sb-mode-hook (lambda () (setq mode-line-format nil)))
-;;   (setq x-underline-at-descent-line t)
-;;   (moody-replace-mode-line-buffer-identification)
-;;   (moody-replace-vc-mode)
-;;   (moody-replace-eldoc-minibuffer-message-function))
-
-
 (use-package moody
-  :ensure t
   :config
   (setq x-underline-at-descent-line t)
 
   (setq-default mode-line-format
                 '(" "
+                  mode-line-modified 
                   mode-line-front-space
                   mode-line-client
                   mode-line-frame-identification
@@ -61,12 +53,19 @@
   (setq global-mode-string (remove 'display-time-string global-mode-string))
 
   (moody-replace-mode-line-buffer-identification)
+  (moody-replace-eldoc-minibuffer-message-function)
   (moody-replace-vc-mode))
 
 (use-package minions
-  :ensure t
   :config
   (minions-mode))
+
+(use-package hide-mode-line
+  :config
+  (add-hook 'treemacs-mode-hook #'hide-mode-line-mode)
+  (add-hook 'vterm-mode-hook #'hide-mode-line-mode)
+  (add-hook 'magit-mode-hook #'hide-mode-line-mode)
+)
 
 (when (display-graphic-p)
   ;; No title. See init.el for initial value.
@@ -103,178 +102,177 @@
   (load-theme 'material t)
   (ar/load-material-org-tweaks)
   :init
-  (defun ar/load-material-org-present-tweaks ()
-    (with-eval-after-load 'frame
-(set-cursor-color "#2BA3FF"))
-
-    (with-eval-after-load 'faces
-(set-face-attribute 'org-level-1 nil :foreground "#ff69b4" :background 'unspecified :box nil)
-(set-face-attribute 'org-level-2 nil :inherit 'lisp-extra-font-lock-quoted :foreground 'unspecified :background 'unspecified :box nil)
-(set-face-attribute 'org-block nil :background "grey11" :box nil)))
-
-  (defun ar/drop-material-org-present-tweaks ()
-    (with-eval-after-load 'frame
-(set-cursor-color "royal blue"))
-
-    (with-eval-after-load 'faces
-(set-face-attribute 'org-level-1 nil :foreground 'unspecified :background 'unspecified :box nil)
-(set-face-attribute 'org-level-2 nil :inherit nil :foreground 'unspecified :background 'unspecified :box nil)
-(set-face-attribute 'org-block nil :background 'unspecified :box nil)))
-
   (defun ar/load-material-org-tweaks ()
     (with-eval-after-load 'frame
-(set-cursor-color "orange"))
+      (set-cursor-color "orange"))
 
     (with-eval-after-load 'faces
-(set-face-attribute 'header-line nil :background "#212121" :foreground "dark grey")
-(set-face-attribute 'internal-border nil :background "#212121")
-;; From https://gist.github.com/huytd/6b785bdaeb595401d69adc7797e5c22c#file-customized-org-mode-theme-el
-(set-face-attribute 'default nil :stipple nil :background "#212121" :foreground "#eeffff" :inverse-video nil
-        ;; :family "Menlo" ;; or Meslo if unavailable: https://github.com/andreberg/Meslo-Font
-        ;; :family "Hack" ;; brew tap homebrew/cask-fonts && brew cask install font-hack
-        :family "JetBrains Mono" ;; brew tap homebrew/cask-fonts && brew install --cask font-jetbrains-mono
-        ;; :family "mononoki" ;; https://madmalik.github.io/mononoki/ or sudo apt-get install fonts-mononoki
-        :box nil :strike-through nil :overline nil :underline nil :slant 'normal :weight 'normal
-        :width 'normal :foundry "nil")
-;; Highlight current linep
-(global-hl-line-mode t)
-(set-face-background hl-line-face "#191919")
-;; Enable rendering SF symbols on macOS.
-(when (memq system-type '(darwin))
-  (set-fontset-font t nil "SF Pro Display" nil 'append))
+      (set-face-attribute 'header-line nil :background "#212121" :foreground "dark grey")
+      (set-face-attribute 'internal-border nil :background "#212121")
+      (set-face-attribute 'default nil :stipple nil :background "#212121" :foreground "#eeffff" :inverse-video nil
+                          :family "JetBrainsMono Nerd Font"
+                          :box nil :strike-through nil :overline nil :underline nil :slant 'normal :weight 'normal
+                          :width 'normal :foundry "nil")
+      ;; Highlight current line
+      (global-hl-line-mode t)
+      (set-face-background hl-line-face "#191919")
+      ;; Enable rendering SF symbols on macOS.
+      (when (memq system-type '(darwin))
+        (set-fontset-font t nil "SF Pro Display" nil 'append))
 
-;; Emoji's: welcome back to Emacs
-;; https://github.crookster.org/emacs27-from-homebrew-on-macos-with-emoji/
-(when (>= emacs-major-version 27)
-  (set-fontset-font t 'symbol (font-spec :family "Apple Color Emoji") nil 'prepend))
+      ;; Emoji's: welcome back to Emacs
+      (when (>= emacs-major-version 27)
+        (set-fontset-font t 'symbol (font-spec :family "Apple Color Emoji") nil 'prepend))
 
-;; Hardcode region theme color.
-(set-face-attribute 'region nil :background "#3f464c" :foreground "#eeeeec" :underline nil)
-(set-face-attribute 'mode-line nil :background "#191919" :box nil)
+      ;; Hardcode region theme color.
+      (set-face-attribute 'region nil :background "#3f464c" :foreground "#eeeeec" :underline nil)
+      (set-face-attribute 'mode-line nil :background "#191919" :box nil)
 
-;; Styling moody https://github.com/tarsius/moody
-(let ((line (face-attribute 'mode-line :underline)))
-  (set-face-attribute 'mode-line nil :overline   line)
-  (set-face-attribute 'mode-line-inactive nil :overline   line)
-  (set-face-attribute 'mode-line-inactive nil :underline  line)
-  (set-face-attribute 'mode-line nil :box nil)
-  (set-face-attribute 'mode-line-inactive nil :box nil)
-  (set-face-attribute 'mode-line-inactive nil :background "#212121" :foreground "#5B6268")))
+      ;; Styling moody https://github.com/tarsius/moody
+      (let ((line (face-attribute 'mode-line :underline)))
+        (set-face-attribute 'mode-line nil :overline   line)
+        (set-face-attribute 'mode-line-inactive nil :overline   line)
+        (set-face-attribute 'mode-line-inactive nil :underline  line)
+        (set-face-attribute 'mode-line nil :box nil)
+        (set-face-attribute 'mode-line-inactive nil :box nil)
+        (set-face-attribute 'mode-line-inactive nil :background "#212121" :foreground "#5B6268")))
 
     (with-eval-after-load 'font-lock
-;; brew install font-iosevka-aile
-;; (set-face-attribute 'font-lock-comment-face nil :font "Iosevka Aile")
-(set-face-attribute 'font-lock-comment-face nil :font "JetBrains Mono")
-(set-face-attribute 'font-lock-constant-face nil :foreground "#C792EA")
-(set-face-attribute 'font-lock-keyword-face nil :foreground "#2BA3FF" :slant 'italic)
-(set-face-attribute 'font-lock-preprocessor-face nil :inherit 'bold :foreground "#2BA3FF" :slant 'italic :weight 'normal)
-(set-face-attribute 'font-lock-string-face nil :foreground "#C3E88D")
-(set-face-attribute 'font-lock-type-face nil :foreground "#FFCB6B")
-(set-face-attribute 'font-lock-variable-name-face nil :foreground "#FF5370"))
+      (set-face-attribute 'font-lock-comment-face nil :font "JetBrainsMono Nerd Font")
+      (set-face-attribute 'font-lock-constant-face nil :foreground "#C792EA")
+      (set-face-attribute 'font-lock-keyword-face nil :foreground "#2BA3FF" :slant 'italic)
+      (set-face-attribute 'font-lock-preprocessor-face nil :inherit 'bold :foreground "#2BA3FF" :slant 'italic :weight 'normal)
+      (set-face-attribute 'font-lock-string-face nil :foreground "#C3E88D")
+      (set-face-attribute 'font-lock-type-face nil :foreground "#FFCB6B")
+      (set-face-attribute 'font-lock-variable-name-face nil :foreground "#FF5370"))
 
     (with-eval-after-load 'em-prompt
-(set-face-attribute 'eshell-prompt nil :foreground "#eeffff"))
-
-    (with-eval-after-load 'company
-(set-face-attribute 'company-preview-search nil :foreground "sandy brown" :background 'unspecified)
-(set-face-attribute 'company-preview-common nil :inherit 'default :foreground 'unspecified :background "#212121"))
-
-    (with-eval-after-load 'company-box
-(set-face-attribute 'company-box-candidate  nil :inherit 'default :foreground "#eeffff" :background "#212121" :box nil)
-(set-face-attribute 'company-box-background nil :inherit 'default :background "#212121" :box nil)
-(set-face-attribute 'company-box-annotation nil :inherit 'company-tooltip-annotation :background "#212121" :foreground "dim gray")
-(set-face-attribute 'company-box-selection nil :inherit 'company-tooltip-selection :foreground "sandy brown"))
+      (set-face-attribute 'eshell-prompt nil :foreground "#eeffff"))
 
     (with-eval-after-load 'popup
-(set-face-attribute 'popup-menu-face nil
-        :foreground (face-foreground 'default)
-        :background (face-background 'default))
-(set-face-attribute 'popup-menu-selection-face nil
-        :foreground "sandy brown"
-        :background "dim gray"))
+      (set-face-attribute 'popup-menu-face nil
+                          :foreground (face-foreground 'default)
+                          :background (face-background 'default))
+      (set-face-attribute 'popup-menu-selection-face nil
+                          :foreground "sandy brown"
+                          :background "dim gray"))
 
     (with-eval-after-load 'paren
-(set-face-attribute 'show-paren-match nil
-        :background 'unspecified
-        :foreground "#FA009A"))
+      (set-face-attribute 'show-paren-match nil
+                          :background 'unspecified
+                          :foreground "#FA009A"))
 
     (with-eval-after-load 'org-indent
-(set-face-attribute 'org-indent nil :background "#212121"))
+      (set-face-attribute 'org-indent nil :background "#212121"))
 
     (with-eval-after-load 'org-faces
-(set-face-attribute 'org-hide nil :foreground "#212121" :background "#212121" :strike-through nil)
-(set-face-attribute 'org-done nil :foreground "#b9ccb2" :strike-through nil)
-(set-face-attribute 'org-agenda-date-today nil :foreground "#Fb1d84")
-(set-face-attribute 'org-agenda-done nil :foreground "#b9ccb2" :strike-through nil)
-(set-face-attribute 'org-table nil :background 'unspecified)
-(set-face-attribute 'org-code nil :background 'unspecified)
-(set-face-attribute 'org-level-1 nil :background 'unspecified :box nil)
-(set-face-attribute 'org-level-2 nil :background 'unspecified :box nil)
-(set-face-attribute 'org-level-3 nil :background 'unspecified :box nil)
-(set-face-attribute 'org-level-4 nil :background 'unspecified :box nil)
-(set-face-attribute 'org-level-5 nil :background 'unspecified :box nil)
-(set-face-attribute 'org-level-6 nil :background 'unspecified :box nil)
-(set-face-attribute 'org-level-7 nil :background 'unspecified :box nil)
-(set-face-attribute 'org-level-8 nil :background 'unspecified :box nil)
-(set-face-attribute 'org-block-begin-line nil :background 'unspecified :box nil)
-(set-face-attribute 'org-block-end-line nil :background 'unspecified :box nil)
-(set-face-attribute 'org-block nil :background 'unspecified :box nil))
+      (set-face-attribute 'org-hide nil :foreground "#212121" :background "#212121" :strike-through nil)
+      (set-face-attribute 'org-done nil :foreground "#b9ccb2" :strike-through nil)
+      (set-face-attribute 'org-agenda-date-today nil :foreground "#Fb1d84")
+      (set-face-attribute 'org-agenda-done nil :foreground "#b9ccb2" :strike-through nil)
+      (set-face-attribute 'org-table nil :background 'unspecified)
+      (set-face-attribute 'org-code nil :background 'unspecified)
+      (set-face-attribute 'org-level-1 nil :background 'unspecified :box nil)
+      (set-face-attribute 'org-level-2 nil :background 'unspecified :box nil)
+      (set-face-attribute 'org-level-3 nil :background 'unspecified :box nil)
+      (set-face-attribute 'org-level-4 nil :background 'unspecified :box nil)
+      (set-face-attribute 'org-level-5 nil :background 'unspecified :box nil)
+      (set-face-attribute 'org-level-6 nil :background 'unspecified :box nil)
+      (set-face-attribute 'org-level-7 nil :background 'unspecified :box nil)
+      (set-face-attribute 'org-level-8 nil :background 'unspecified :box nil)
+      (set-face-attribute 'org-block-begin-line nil :background 'unspecified :box nil)
+      (set-face-attribute 'org-block-end-line nil :background 'unspecified :box nil)
+      (set-face-attribute 'org-block nil :background 'unspecified :box nil))
 
     (with-eval-after-load 'mu4e-vars
-(set-face-attribute 'mu4e-header-highlight-face nil :inherit 'default :foreground "sandy brown" :weight 'bold :background 'unspecified)
-(set-face-attribute 'mu4e-unread-face nil :inherit 'default :weight 'bold :foreground "#2BA3FF" :underline nil))
+      (set-face-attribute 'mu4e-header-highlight-face nil :inherit 'default :foreground "sandy brown" :weight 'bold :background 'unspecified)
+      (set-face-attribute 'mu4e-unread-face nil :inherit 'default :weight 'bold :foreground "#2BA3FF" :underline nil))
 
     (with-eval-after-load 'comint
-(set-face-attribute 'comint-highlight-input nil
-        :inherit 'default
-        :foreground "sandy brown"
-        :weight 'normal
-        :background 'unspecified))
+      (set-face-attribute 'comint-highlight-input nil
+                          :inherit 'default
+                          :foreground "sandy brown"
+                          :weight 'normal
+                          :background 'unspecified))
 
     ;; No color for fringe, blends with the rest of the window.
     (with-eval-after-load 'fringe
-(set-face-attribute 'fringe nil
-        :foreground (face-foreground 'default)
-        :background (face-background 'default)))
+      (set-face-attribute 'fringe nil
+                          :foreground (face-foreground 'default)
+                          :background (face-background 'default)))
 
     ;; No color for sp-pair-overlay-face.
     (with-eval-after-load 'smartparens
-(set-face-attribute 'sp-pair-overlay-face nil
-        :foreground (face-foreground 'default)
-        :background (face-background 'default)))
+      (set-face-attribute 'sp-pair-overlay-face nil
+                          :foreground (face-foreground 'default)
+                          :background (face-background 'default)))
 
     ;; Remove background so it doesn't look selected with region.
     ;; Make the foreground the same as `diredfl-flag-mark' (ie. orange).
     (with-eval-after-load 'diredfl
-(set-face-attribute 'diredfl-flag-mark-line nil
-        :foreground "orange"
-        :background 'unspecified))
+      (set-face-attribute 'diredfl-flag-mark-line nil
+                          :foreground "orange"
+                          :background 'unspecified))
 
     (with-eval-after-load 'dired-subtree
-(set-face-attribute 'dired-subtree-depth-1-face nil
-        :background 'unspecified)
-(set-face-attribute 'dired-subtree-depth-2-face nil
-        :background 'unspecified)
-(set-face-attribute 'dired-subtree-depth-3-face nil
-        :background 'unspecified)
-(set-face-attribute 'dired-subtree-depth-4-face nil
-        :background 'unspecified)
-(set-face-attribute 'dired-subtree-depth-5-face nil
-        :background 'unspecified)
-(set-face-attribute 'dired-subtree-depth-6-face nil
-        :background 'unspecified))
+      (set-face-attribute 'dired-subtree-depth-1-face nil
+                          :background 'unspecified)
+      (set-face-attribute 'dired-subtree-depth-2-face nil
+                          :background 'unspecified)
+      (set-face-attribute 'dired-subtree-depth-3-face nil
+                          :background 'unspecified)
+      (set-face-attribute 'dired-subtree-depth-4-face nil
+                          :background 'unspecified)
+      (set-face-attribute 'dired-subtree-depth-5-face nil
+                          :background 'unspecified)
+      (set-face-attribute 'dired-subtree-depth-6-face nil
+                          :background 'unspecified))
 
     ;; Trying out line underline (instead of wave).
     (mapatoms (lambda (atom)
-    (let ((underline nil))
-      (when (and (facep atom)
-           (setq underline
-           (face-attribute atom
-               :underline))
-           (eq (plist-get underline :style) 'wave))
-        (plist-put underline :style 'line)
-        (set-face-attribute atom nil
-          :underline underline)))))))
+                (let ((underline nil))
+                  (when (and (facep atom)
+                             (setq underline
+                                   (face-attribute atom
+                                                   :underline))
+                             (eq (plist-get underline :style) 'wave))
+                    (plist-put underline :style 'line)
+                    (set-face-attribute atom nil
+                                        :underline underline)))))))
+
+(custom-set-faces
+  '(tab-bar ((t (:background "#191919" :foreground "#fff" :height 1.1 :padding 1))))
+  '(tab-bar-tab ((t (:background "#191919" :foreground "#fff" :box (:line-width 3 :color "#191919" :style flat-button)))))
+  '(tab-bar-tab-inactive ((t (:background "#191919" :foreground "#aaa")))))
+
+(setq tab-bar-tab-hints t)
+(setq tab-bar-show t)
+(setq tab-bar-position 'top)
+(setq tab-bar-close-button-show nil)
+(setq tab-bar-new-button-show nil)
+(setq tab-bar-auto-width nil)
+
+(use-package dashboard
+  :custom
+  (dashboard-projects-backend 'project-el)
+  (dashboard-items '((recents  . 5)
+                     (projects . 5)
+                     (bookmarks . 5)
+                     (agenda . 5)))
+  (dashboard-startup-banner 'logo)
+  (dashboard-center-content t)
+  (dashboard-display-icons-p t)
+  (dashboard-icon-type 'nerd-icons)
+  (dashboard-set-heading-icons t)
+  (dashboard-set-file-icons t)
+  (initial-buffer-choice (lambda () (get-buffer-create "*dashboard*")))
+  :config
+  (dashboard-setup-startup-hook)
+  (setq dashboard-startup-banner 3
+        ;; dashboard-icon-type 'all-the-icons
+        dashboard-items '((recents   . 5)
+                          (projects  . 5)
+                          (agenda    . 5))))
 
 (use-package eglot
   :ensure nil
@@ -292,6 +290,9 @@
   :custom
   (eglot-autoshutdown t)
   :config
+  ;; Make eldoc only display one liner in echo area
+  (setq eldoc-echo-area-use-multiline-p nil)
+
   ;; Javascript
   (add-hook 'js2-mode-hook 'eglot-ensure)
   (add-to-list 'eglot-server-programs '((js2-mode) "typescript-language-server" "--stdio"))
@@ -303,7 +304,25 @@
   :ensure nil
   :custom ((project-compilation-buffer-name-function
             'project-prefixed-buffer-name))
-  :config)
+  :config
+
+  (defun nb/vterm-in-project ()
+    "Invoke `vterm' in the project's root.
+Switch to the project specific term buffer if it already exists."
+    (interactive)
+    (unless (project-current)
+      (error "File/buffer doesn't make part of an project"))
+    (when-let* ((project (project-current))
+                (default-directory (expand-file-name (project-root project)))
+                (buffer-name (project-prefixed-buffer-name "vterm")))
+      (unless (buffer-live-p (get-buffer buffer-name))
+        (unless (require 'vterm nil 'noerror)
+          (error "Package 'vterm' is not available"))
+        (when (fboundp 'vterm)
+          (vterm buffer-name)))
+      (pop-to-buffer-same-window buffer-name)))
+
+  (fset 'project-shell 'nb/vterm-in-project))
 
 (use-package ibuffer-projectile
   :config
@@ -312,6 +331,48 @@
       (ibuffer-projectile-set-filter-groups)
       (unless (eq ibuffer-sorting-mode 'alphabetic)
         (ibuffer-do-sort-by-alphabetic)))))
+
+(use-package tabspaces
+  :hook (after-init . tabspaces-mode) ;; use this only if you want the minor-mode loaded at startup. 
+  :commands (tabspaces-switch-or-create-workspace
+             tabspaces-open-or-create-project-and-workspace)
+  :bind (
+         ("C-x p p" . tabspaces-open-or-create-project-and-workspace)
+         ("C-c TAB o" . tabspaces-open-or-create-project-and-workspace)
+         ("C-c TAB TAB" . tabspaces-switch-or-create-workspace)
+         ("C-c TAB k" . tabspaces-kill-buffers-close-workspace))
+  :custom
+  (tabspaces-use-filtered-buffers-as-default t)
+  (tabspaces-default-tab "Default")
+  (tabspaces-remove-to-default t)
+  (tabspaces-include-buffers '("*scratch*"))
+  ;; (tabspaces-initialize-project-with-todo t)
+  ;; (tabspaces-todo-file-name "project-todo.org")
+
+  ;; sessions
+  (tabspaces-session t)
+  (tabspaces-session-auto-restore t)
+
+  :config
+  ;; Filter Buffers for Consult-Buffer
+  (with-eval-after-load 'consult
+    ;; hide full buffer list (still available with "b" prefix)
+    (consult-customize consult--source-buffer :hidden t :default nil)
+    ;; set consult-workspace buffer list
+    (defvar consult--source-workspace
+      (list :name     "Workspace Buffers"
+            :narrow   ?w
+            :history  'buffer-name-history
+            :category 'buffer
+            :state    #'consult--buffer-state
+            :default  t
+            :items    (lambda () (consult--buffer-query
+                                  :predicate #'tabspaces--local-buffer-p
+                                  :sort 'visibility
+                                  :as #'buffer-name)))
+
+      "Set workspace buffer list for consult-buffer.")
+    (add-to-list 'consult-buffer-sources 'consult--source-workspace)))
 
 (use-package apheleia
   :ensure t
@@ -333,6 +394,13 @@
   :ensure t
   :config
   (global-set-key (kbd "C-;") 'avy-goto-char))
+
+(use-package multiple-cursors
+  :config
+  (global-set-key (kbd "C-S-c C-S-c") 'mc/edit-lines)
+  (global-set-key (kbd "C->") 'mc/mark-next-like-this)
+  (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
+  (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this))
 
 (setq-default indent-tabs-mode nil)
 (setq-default tab-width 2)
@@ -443,8 +511,8 @@
 
           ("M-s f" . consult-find)
           ("M-s L" . consult-locate)
-          ("M-s g" . consult-grep)
-          ("M-s G" . consult-git-grep)
+          ("M-s g" . consult-git-grep)
+          ("M-s G" . consult-grep)
           ("M-s r" . consult-ripgrep)
           ("M-s l" . consult-line)
           ("M-s k" . consult-keep-lines)
@@ -471,24 +539,23 @@
 
 (use-package elixir-mode
   :ensure t
-  :custom
-  (lsp-elixir-server-command '("~/build/lexical/_build/dev/package/lexical/bin/start_lexical.sh")))
+  :init
+  (defun nb/enter-pipe ()
+    (interactive)
+    (let ((oldpos (point)))
+      (end-of-line)
+      (newline-and-indent)
+      (insert "|> ")))
+  :bind (("<C-return>" . nb/enter-pipe)))
 
-(use-package exunit
-  :config
-  ;; fix broken dark test link
-  (custom-set-faces
-   '(ansi-color-black ((t (:background "MediumPurple2" :foreground "MediumPurple2")))))
-  :hook
-  (elixir-ts-mode . exunit-mode)
-  (elixir-mode . exunit-mode))
-
-(defun nick/enter-pipe ()
-  (interactive)
-  (let ((oldpos (point)))
-    (end-of-line)
-    (newline-and-indent)
-    (insert "|> ")))
+  (use-package exunit
+    :config
+    ;; fix broken dark test link
+    (custom-set-faces
+     '(ansi-color-black ((t (:background "MediumPurple2" :foreground "MediumPurple2")))))
+    :hook
+    (elixir-ts-mode . exunit-mode)
+    (elixir-mode . exunit-mode))
 
 (setq-default js-indent-level 2)
 
@@ -616,8 +683,8 @@
     ;; The default width and height of the icons is 22 pixels. If you are
     ;; using a Hi-DPI display, uncomment this to double the icon size.
     ;;(treemacs-resize-icons 44)
-
     (treemacs-follow-mode t)
+    (treemacs-project-follow-mode t)
     (treemacs-filewatch-mode t)
     (treemacs-fringe-indicator-mode 'always)
     (when treemacs-python-executable
@@ -653,6 +720,12 @@
   :after (treemacs magit)
   :ensure t)
 
+(use-package treemacs-all-the-icons
+  :after (treemacs projectile)
+  :ensure t
+  :config
+  (treemacs-load-theme 'all-the-icons))
+
 (use-package treemacs-persp ;;treemacs-perspective if you use perspective.el vs. persp-mode
   :after (treemacs persp-mode) ;;or perspective vs. persp-mode
   :ensure t
@@ -662,23 +735,6 @@
   :after (treemacs)
   :ensure t
   :config (treemacs-set-scope-type 'Tabs))
-
-(use-package dashboard
-  :custom
-  (dashboard-projects-backend 'project-el)
-  (dashboard-items '((recents  . 5)
-                     (projects . 5)
-                     (bookmarks . 5)
-                     (agenda . 5)))
-  (dashboard-startup-banner 'logo)
-  (dashboard-center-content t)
-  (dashboard-display-icons-p t)
-  (dashboard-icon-type 'nerd-icons)
-  (dashboard-set-heading-icons t)
-  (dashboard-set-file-icons t)
-  (initial-buffer-choice (lambda () (get-buffer-create "*dashboard*")))
-  :config
-  (dashboard-setup-startup-hook))
 
 (use-package vterm)
 

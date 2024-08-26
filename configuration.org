@@ -282,10 +282,6 @@
                       (set-face-attribute atom nil
                                           :underline underline)))))))
 #+end_src
-*** Humanoid
-    #+begin_src emacs-lisp
-      (use-package humanoid-themes)
-#+end_src
 ** Tab-bar
 #+begin_src emacs-lisp
    (custom-set-faces
@@ -299,26 +295,33 @@
   (setq tab-bar-close-button-show nil)
   (setq tab-bar-new-button-show nil)
   (setq tab-bar-auto-width nil)
+
 #+end_src
 ** Dashboard
   #+begin_src emacs-lisp
-(use-package dashboard
-  :custom
-  (dashboard-projects-backend 'project-el)
-  (dashboard-items '((recents  . 5)
-                     (projects . 5)
-                     (bookmarks . 5)
-                     (agenda . 5)))
-  (dashboard-startup-banner 'logo)
-  (dashboard-center-content t)
-  (dashboard-display-icons-p t)
-  (dashboard-icon-type 'nerd-icons)
-  (dashboard-set-heading-icons t)
-  (dashboard-set-file-icons t)
-  (initial-buffer-choice (lambda () (get-buffer-create "*dashboard*")))
-  :config
-  (dashboard-setup-startup-hook))
+    (use-package dashboard
+      :custom
+      (dashboard-projects-backend 'project-el)
+      (dashboard-items '((recents  . 5)
+                         (projects . 5)
+                         (bookmarks . 5)
+                         (agenda . 5)))
+      (dashboard-startup-banner 'logo)
+      (dashboard-center-content t)
+      (dashboard-display-icons-p t)
+      (dashboard-icon-type 'nerd-icons)
+      (dashboard-set-heading-icons t)
+      (dashboard-set-file-icons t)
+      (initial-buffer-choice (lambda () (get-buffer-create "*dashboard*")))
+      :config
+      (dashboard-setup-startup-hook)
+      (setq dashboard-startup-banner 3
+            ;; dashboard-icon-type 'all-the-icons
+            dashboard-items '((recents   . 5)
+                              (projects  . 5)
+                              (agenda    . 5))))
 #+end_src
+
 * LSP
   #+begin_src emacs-lisp
     (use-package eglot
@@ -337,6 +340,9 @@
       :custom
       (eglot-autoshutdown t)
       :config
+      ;; Make eldoc only display one liner in echo area
+      (setq eldoc-echo-area-use-multiline-p nil)
+
       ;; Javascript
       (add-hook 'js2-mode-hook 'eglot-ensure)
       (add-to-list 'eglot-server-programs '((js2-mode) "typescript-language-server" "--stdio"))
@@ -856,6 +862,12 @@ Latest transient (bug elpaca)
     (use-package treemacs-magit
       :after (treemacs magit)
       :ensure t)
+
+    (use-package treemacs-all-the-icons
+      :after (treemacs projectile)
+      :ensure t
+      :config
+      (treemacs-load-theme 'all-the-icons))
 
     (use-package treemacs-persp ;;treemacs-perspective if you use perspective.el vs. persp-mode
       :after (treemacs persp-mode) ;;or perspective vs. persp-mode
