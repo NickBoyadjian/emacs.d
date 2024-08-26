@@ -284,18 +284,35 @@
 #+end_src
 ** Tab-bar
 #+begin_src emacs-lisp
-   (custom-set-faces
-    '(tab-bar ((t (:background "#191919" :foreground "#fff" :height 1.1 :padding 1))))
-    '(tab-bar-tab ((t (:background "#191919" :foreground "#fff" :box (:line-width 3 :color "#191919" :style flat-button)))))
-    '(tab-bar-tab-inactive ((t (:background "#191919" :foreground "#aaa")))))
 
-  (setq tab-bar-tab-hints t)
-  (setq tab-bar-show t)
-  (setq tab-bar-position 'top)
-  (setq tab-bar-close-button-show nil)
-  (setq tab-bar-new-button-show nil)
-  (setq tab-bar-auto-width nil)
+  (set-face-attribute 'tab-bar nil :background "#212121")
+   (defun nb/tab-name-format (tab i)
+     "Return the tab name with different font colors for active and inactive tabs."
+     (let* ((current-tab (eq (car tab) 'current-tab))
+            (name (alist-get 'name tab))
+            (separator " ")
+            ;; Define face for active and inactive tabs
+            (active-name-face '(:foreground "#C792EA" :background "#212121" :height 1))
+            (inactive-name-face '(:foreground "#FFFFFF" :background "#212121" :height 1))
+            (separator-face '(:foreground "light gray")))
+       (concat
+        ;; Apply different faces based on whether the tab is active
+        (propertize name 'face (if current-tab active-name-face inactive-name-face))
+        (propertize separator 'face separator-face))))
 
+   (setq tab-bar-tab-name-format-function #'nb/tab-name-format)
+
+  ;; (custom-set-faces
+  ;;  '(tab-bar ((t (:background "#202020" :foreground "#fff" :height 1 :padding 1))))
+  ;;  '(tab-bar-tab ((t (:background "#202020" :foreground "#fff" :box (:line-width 3 :color "#191919" :style flat-button)))))
+  ;;  '(tab-bar-tab-inactive ((t (:background "#202020" :foreground "#aaa")))))
+
+   (setq tab-bar-tab-hints t)
+   (setq tab-bar-show t)
+   (setq tab-bar-position 'top)
+   (setq tab-bar-close-button-show nil)
+   (setq tab-bar-new-button-show nil)
+   (setq tab-bar-auto-width nil)
 #+end_src
 ** Dashboard
   #+begin_src emacs-lisp
