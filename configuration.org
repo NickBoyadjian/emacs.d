@@ -29,28 +29,28 @@
 
 * Basic UI tweaks
 #+begin_src emacs-lisp  
-  (menu-bar-mode -1)
-  (tool-bar-mode -1)
-  (scroll-bar-mode -1)
-  (setq visible-bell 1)
-  (setq ring-bell-function 'ignore)
+    (menu-bar-mode -1)
+    (tool-bar-mode -1)
+    (scroll-bar-mode -1)
+    (setq visible-bell 1
+          ring-bell-function 'ignore)
 
-  ;; Line numbers
-  (set-fringe-mode '(0 . nil))
-  (setq display-line-numbers-width-start 1)
-  (add-hook 'prog-mode-hook 'display-line-numbers-mode)
+    ;; Line numbers
+    (set-fringe-mode '(0 . nil))
+    (setq display-line-numbers-width-start 1)
+    (add-hook 'prog-mode-hook 'display-line-numbers-mode)
 
-  (when (display-graphic-p)
-  ;; No title. See init.el for initial value.
-  (setq-default frame-title-format nil)
-  ;; Hide the cursor in inactive windows.
-  (setq cursor-in-non-selected-windows nil)
-  ;; Avoid native dialogs.
-  (setq use-dialog-box nil))
-  ;; Make the title bar look good
-  (add-to-list 'default-frame-alist '(ns-transparent-titlebar . t))
-  (add-to-list 'default-frame-alist '(ns-appearance . dark))
-  (global-eldoc-mode -1)
+    (when (display-graphic-p)
+    ;; No title. See init.el for initial value.
+    (setq-default frame-title-format nil)
+    ;; Hide the cursor in inactive windows.
+    (setq cursor-in-non-selected-windows nil)
+    ;; Avoid native dialogs.
+    (setq use-dialog-box nil))
+    ;; Make the title bar look good
+    (add-to-list 'default-frame-alist '(ns-transparent-titlebar . t))
+    (add-to-list 'default-frame-alist '(ns-appearance . dark))
+    (global-eldoc-mode -1)
 #+end_src
 ** UTF-8
 #+begin_src emacs-lisp
@@ -300,19 +300,13 @@
         (propertize name 'face (if current-tab active-name-face inactive-name-face))
         (propertize separator 'face separator-face))))
 
-   (setq tab-bar-tab-name-format-function #'nb/tab-name-format)
-
-  ;; (custom-set-faces
-  ;;  '(tab-bar ((t (:background "#202020" :foreground "#fff" :height 1 :padding 1))))
-  ;;  '(tab-bar-tab ((t (:background "#202020" :foreground "#fff" :box (:line-width 3 :color "#191919" :style flat-button)))))
-  ;;  '(tab-bar-tab-inactive ((t (:background "#202020" :foreground "#aaa")))))
-
-   (setq tab-bar-tab-hints t)
-   (setq tab-bar-show t)
-   (setq tab-bar-position 'top)
-   (setq tab-bar-close-button-show nil)
-   (setq tab-bar-new-button-show nil)
-   (setq tab-bar-auto-width nil)
+   (setq tab-bar-tab-name-format-function #'nb/tab-name-format
+         tab-bar-tab-hints t
+         tab-bar-show t
+         tab-bar-position 'top
+         tab-bar-close-button-show nil
+         tab-bar-new-button-show nil
+         tab-bar-auto-width nil)
 #+end_src
 ** Dashboard
   #+begin_src emacs-lisp
@@ -898,7 +892,9 @@ Latest transient (bug elpaca)
 #+end_src
 * Vterm
   #+begin_src emacs-lisp
-    (use-package vterm)
+    (use-package vterm
+      :config
+      (setq vterm-max-scrollback 2000))
 #+end_src
 * Window management
   Auto focus help windows when they are created
@@ -964,4 +960,15 @@ Latest transient (bug elpaca)
 
     (use-package ob-async
       :after ob)
+#+end_src
+* Podium
+#+begin_src emacs-lisp
+  (use-package podium
+    :ensure (podium :type git :url "git@gitlab-ssh.podium.com:vinicius.simoes/podium.el.git" :branch "master")
+    :custom
+    (podium-gitlab-oncall-projects
+     '("engineering/account-structure/vader"
+       "engineering/account-structure/anakin"
+       "engineering/account-structure/anakin_client"))
+    (podium-gitlab-defaultcodepath "~/podium/"))
 #+end_src
