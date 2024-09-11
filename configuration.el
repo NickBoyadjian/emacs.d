@@ -1,8 +1,8 @@
 (menu-bar-mode -1)
 (tool-bar-mode -1)
 (scroll-bar-mode -1)
-(setq visible-bell 1)
-(setq ring-bell-function 'ignore)
+(setq visible-bell 1
+      ring-bell-function 'ignore)
 
 ;; Line numbers
 (set-fringe-mode '(0 . nil))
@@ -240,17 +240,28 @@
                     (set-face-attribute atom nil
                                         :underline underline)))))))
 
-(custom-set-faces
-  '(tab-bar ((t (:background "#191919" :foreground "#fff" :height 1.1 :padding 1))))
-  '(tab-bar-tab ((t (:background "#191919" :foreground "#fff" :box (:line-width 3 :color "#191919" :style flat-button)))))
-  '(tab-bar-tab-inactive ((t (:background "#191919" :foreground "#aaa")))))
+(set-face-attribute 'tab-bar nil :background "#212121")
+ (defun nb/tab-name-format (tab i)
+   "Return the tab name with different font colors for active and inactive tabs."
+   (let* ((current-tab (eq (car tab) 'current-tab))
+          (name (alist-get 'name tab))
+          (separator " ")
+          ;; Define face for active and inactive tabs
+          (active-name-face '(:foreground "#C792EA" :background "#212121" :height 1))
+          (inactive-name-face '(:foreground "#FFFFFF" :background "#212121" :height 1))
+          (separator-face '(:foreground "light gray")))
+     (concat
+      ;; Apply different faces based on whether the tab is active
+      (propertize name 'face (if current-tab active-name-face inactive-name-face))
+      (propertize separator 'face separator-face))))
 
-(setq tab-bar-tab-hints t)
-(setq tab-bar-show t)
-(setq tab-bar-position 'top)
-(setq tab-bar-close-button-show nil)
-(setq tab-bar-new-button-show nil)
-(setq tab-bar-auto-width nil)
+ (setq tab-bar-tab-name-format-function #'nb/tab-name-format
+       tab-bar-tab-hints t
+       tab-bar-show t
+       tab-bar-position 'top
+       tab-bar-close-button-show nil
+       tab-bar-new-button-show nil
+       tab-bar-auto-width nil)
 
 (use-package dashboard
   :custom
@@ -383,6 +394,23 @@ Switch to the project specific term buffer if it already exists."
   :config
   (add-hook 'js2-mode-hook 'prettier-js-mode)
   (add-hook 'web-mode-hook 'prettier-js-mode))
+
+;; (electric-pair-mode -1)
+
+(use-package smartparens
+  :config
+  (require 'smartparens-config)
+  (sp-with-modes '(elixir-mode)
+    (sp-local-pair "do" "end"
+                   :when '(("SPC" "RET"))
+                   :post-handlers '(("||\n[i]" "RET"))))
+  :bind
+  (:map smartparens-mode-map
+        ("C-)" . sp-forward-slurp-sexp)
+        ("C-(" . sp-forward-barf-sexp)
+        ("C-{" . sp-backward-slurp-sexp)
+        ("C-}" . sp-backward-barf-sexp))
+  :hook   (prog-mode . smartparens-mode))
 
 (defconst NB/IS-MACOS (eq system-type 'darwin))
 
@@ -736,7 +764,9 @@ Switch to the project specific term buffer if it already exists."
   :ensure t
   :config (treemacs-set-scope-type 'Tabs))
 
-(use-package vterm)
+(use-package vterm
+  :config
+  (setq vterm-max-scrollback 2000))
 
 (setq help-window-select t)
 
@@ -791,3 +821,12 @@ Switch to the project specific term buffer if it already exists."
 
 (use-package ob-async
   :after ob)
+
+(use-package podium
+  :ensure (podium :type git :url "git@gitlab-ssh.podium.com:vinicius.simoes/podium.el.git" :branch "master")
+  :custom
+  (podium-gitlab-oncall-projects
+   '("engineering/account-structure/vader"
+     "engineering/account-structure/anakin"
+     "engineering/account-structure/anakin_client"))
+  (podium-gitlab-defaultcodepath "~/podium/"))
