@@ -29,28 +29,29 @@
 
 * Basic UI tweaks
 #+begin_src emacs-lisp  
-    (menu-bar-mode -1)
-    (tool-bar-mode -1)
-    (scroll-bar-mode -1)
-    (setq visible-bell 1
-          ring-bell-function 'ignore)
+  (menu-bar-mode -1)
+  (tool-bar-mode -1)
+  (scroll-bar-mode -1)
+  (setq visible-bell 1
+        ring-bell-function 'ignore)
 
-    ;; Line numbers
-    (set-fringe-mode '(0 . nil))
-    (setq display-line-numbers-width-start 1)
-    (add-hook 'prog-mode-hook 'display-line-numbers-mode)
+  ;; Line numbers
+  (set-fringe-mode '(0 . nil))
+  (setq display-line-numbers-width-start 1)
+  (add-hook 'prog-mode-hook 'display-line-numbers-mode)
 
-    (when (display-graphic-p)
-    ;; No title. See init.el for initial value.
-    (setq-default frame-title-format nil)
-    ;; Hide the cursor in inactive windows.
-    (setq cursor-in-non-selected-windows nil)
-    ;; Avoid native dialogs.
-    (setq use-dialog-box nil))
-    ;; Make the title bar look good
-    (add-to-list 'default-frame-alist '(ns-transparent-titlebar . t))
-    (add-to-list 'default-frame-alist '(ns-appearance . dark))
-    (global-eldoc-mode -1)
+  (when (display-graphic-p)
+  ;; No title. See init.el for initial value.
+  (setq-default frame-title-format nil)
+  ;; Hide the cursor in inactive windows.
+  (setq cursor-in-non-selected-windows nil)
+  (setq-default cursor-type 'bar)
+  ;; Avoid native dialogs.
+  (setq use-dialog-box nil))
+  ;; Make the title bar look good
+  (add-to-list 'default-frame-alist '(ns-transparent-titlebar . t))
+  (add-to-list 'default-frame-alist '(ns-appearance . dark))
+  (global-eldoc-mode -1)
 #+end_src
 ** UTF-8
 #+begin_src emacs-lisp
