@@ -72,37 +72,6 @@
 * UI
 ** Modeline
 #+begin_src emacs-lisp
-    ;; (use-package moody
-    ;;   :config
-    ;;   (setq x-underline-at-descent-line t)
-
-    ;;   (setq-default mode-line-format
-    ;;                 '(" "
-    ;;                   mode-line-modified
-    ;;                   mode-line-front-space
-    ;;                   mode-line-client
-    ;;                   mode-line-frame-identification
-    ;;                   mode-line-buffer-identification
-    ;;                   " "
-    ;;                   mode-line-position
-    ;;                   (multiple-cursors-mode mc/mode-line)
-    ;;                   " "
-    ;;                   mode-line-modes
-
-    ;;                   mode-line-format-right-align
-    ;;                   (vc-mode vc-mode)
-    ;;                   mode-line-end-spaces))
-
-    ;;   (setq global-mode-string (remove 'display-time-string global-mode-string))
-    ;;   (set-face-attribute 'mode-line nil :overline "#212121")
-
-    ;;   (moody-replace-mode-line-buffer-identification)
-    ;;   (moody-replace-eldoc-minibuffer-message-function))
-
-    ;; (use-package minions
-    ;;   :config
-    ;;   (minions-mode))
-
     (use-package doom-modeline
       :ensure t
       :init (doom-modeline-mode 1)
@@ -148,152 +117,6 @@
     ;; Remove thin border. Visible since Monterey.
     (set-frame-parameter nil 'internal-border-width 0)
     (set-frame-position (selected-frame) 15 53))
-#+end_src
-*** Material
-#+begin_src emacs-lisp
-  ;; (use-package material-theme
-  ;;   :ensure t
-  ;;   :config
-  ;;   (load-theme 'material t)
-  ;;   (ar/load-material-org-tweaks)
-  ;;   :init
-  ;;   (defun ar/load-material-org-tweaks ()
-  ;;     (with-eval-after-load 'frame
-  ;;       (set-cursor-color "orange"))
-
-  ;;     (with-eval-after-load 'faces
-  ;;       (set-face-attribute 'header-line nil :background "#212121" :foreground "dark grey")
-  ;;       (set-face-attribute 'internal-border nil :background "#212121")
-  ;;       (set-face-attribute 'default nil :stipple nil :background "#212121" :foreground "#eeffff" :inverse-video nil
-  ;;                           :family "JetBrainsMono Nerd Font"
-  ;;                           :box nil :strike-through nil :overline nil :underline nil :slant 'normal :weight 'normal
-  ;;                           :width 'normal :foundry "nil")
-  ;;       ;; Highlight current line
-  ;;       (global-hl-line-mode t)
-  ;;       (set-face-background hl-line-face "#191919")
-  ;;       ;; Enable rendering SF symbols on macOS.
-  ;;       (when (memq system-type '(darwin))
-  ;;         (set-fontset-font t nil "SF Pro Display" nil 'append))
-
-  ;;       ;; Emoji's: welcome back to Emacs
-  ;;       (when (>= emacs-major-version 27)
-  ;;         (set-fontset-font t 'symbol (font-spec :family "Apple Color Emoji") nil 'prepend))
-
-  ;;       ;; Hardcode region theme color.
-  ;;       (set-face-attribute 'region nil :background "#3f464c" :foreground "#eeeeec" :underline nil)
-  ;;       (set-face-attribute 'mode-line nil :background "#191919" :box nil)
-
-  ;;       ;; Styling moody https://github.com/tarsius/moody
-  ;;       (let ((line (face-attribute 'mode-line :underline)))
-  ;;         (set-face-attribute 'mode-line nil :overline   line)
-  ;;         (set-face-attribute 'mode-line-inactive nil :overline   line)
-  ;;         (set-face-attribute 'mode-line-inactive nil :underline  line)
-  ;;         (set-face-attribute 'mode-line nil :box nil)
-  ;;         (set-face-attribute 'mode-line-inactive nil :box nil)
-  ;;         (set-face-attribute 'mode-line-inactive nil :background "#212121" :foreground "#5B6268")))
-
-  ;;     (with-eval-after-load 'font-lock
-  ;;       (set-face-attribute 'font-lock-comment-face nil :font "JetBrainsMono Nerd Font")
-  ;;       (set-face-attribute 'font-lock-constant-face nil :foreground "#C792EA")
-  ;;       (set-face-attribute 'font-lock-keyword-face nil :foreground "#2BA3FF" :slant 'italic)
-  ;;       (set-face-attribute 'font-lock-preprocessor-face nil :inherit 'bold :foreground "#2BA3FF" :slant 'italic :weight 'normal)
-  ;;       (set-face-attribute 'font-lock-string-face nil :foreground "#C3E88D")
-  ;;       (set-face-attribute 'font-lock-type-face nil :foreground "#FFCB6B")
-  ;;       (set-face-attribute 'font-lock-variable-name-face nil :foreground "#FF5370"))
-
-  ;;     (with-eval-after-load 'em-prompt
-  ;;       (set-face-attribute 'eshell-prompt nil :foreground "#eeffff"))
-
-  ;;     (with-eval-after-load 'popup
-  ;;       (set-face-attribute 'popup-menu-face nil
-  ;;                           :foreground (face-foreground 'default)
-  ;;                           :background (face-background 'default))
-  ;;       (set-face-attribute 'popup-menu-selection-face nil
-  ;;                           :foreground "sandy brown"
-  ;;                           :background "dim gray"))
-
-  ;;     (with-eval-after-load 'paren
-  ;;       (set-face-attribute 'show-paren-match nil
-  ;;                           :background 'unspecified
-  ;;                           :foreground "#FA009A"))
-
-  ;;     (with-eval-after-load 'org-indent
-  ;;       (set-face-attribute 'org-indent nil :background "#212121"))
-
-  ;;     (with-eval-after-load 'org-faces
-  ;;       (set-face-attribute 'org-hide nil :foreground "#212121" :background "#212121" :strike-through nil)
-  ;;       (set-face-attribute 'org-done nil :foreground "#b9ccb2" :strike-through nil)
-  ;;       (set-face-attribute 'org-agenda-date-today nil :foreground "#Fb1d84")
-  ;;       (set-face-attribute 'org-agenda-done nil :foreground "#b9ccb2" :strike-through nil)
-  ;;       (set-face-attribute 'org-table nil :background 'unspecified)
-  ;;       (set-face-attribute 'org-code nil :background 'unspecified)
-  ;;       (set-face-attribute 'org-level-1 nil :background 'unspecified :box nil)
-  ;;       (set-face-attribute 'org-level-2 nil :background 'unspecified :box nil)
-  ;;       (set-face-attribute 'org-level-3 nil :background 'unspecified :box nil)
-  ;;       (set-face-attribute 'org-level-4 nil :background 'unspecified :box nil)
-  ;;       (set-face-attribute 'org-level-5 nil :background 'unspecified :box nil)
-  ;;       (set-face-attribute 'org-level-6 nil :background 'unspecified :box nil)
-  ;;       (set-face-attribute 'org-level-7 nil :background 'unspecified :box nil)
-  ;;       (set-face-attribute 'org-level-8 nil :background 'unspecified :box nil)
-  ;;       (set-face-attribute 'org-block-begin-line nil :background 'unspecified :box nil)
-  ;;       (set-face-attribute 'org-block-end-line nil :background 'unspecified :box nil)
-  ;;       (set-face-attribute 'org-block nil :background 'unspecified :box nil))
-
-  ;;     (with-eval-after-load 'mu4e-vars
-  ;;       (set-face-attribute 'mu4e-header-highlight-face nil :inherit 'default :foreground "sandy brown" :weight 'bold :background 'unspecified)
-  ;;       (set-face-attribute 'mu4e-unread-face nil :inherit 'default :weight 'bold :foreground "#2BA3FF" :underline nil))
-
-  ;;     (with-eval-after-load 'comint
-  ;;       (set-face-attribute 'comint-highlight-input nil
-  ;;                           :inherit 'default
-  ;;                           :foreground "sandy brown"
-  ;;                           :weight 'normal
-  ;;                           :background 'unspecified))
-
-  ;;     ;; No color for fringe, blends with the rest of the window.
-  ;;     (with-eval-after-load 'fringe
-  ;;       (set-face-attribute 'fringe nil
-  ;;                           :foreground (face-foreground 'default)
-  ;;                           :background (face-background 'default)))
-
-  ;;     ;; No color for sp-pair-overlay-face.
-  ;;     (with-eval-after-load 'smartparens
-  ;;       (set-face-attribute 'sp-pair-overlay-face nil
-  ;;                           :foreground (face-foreground 'default)
-  ;;                           :background (face-background 'default)))
-
-  ;;     ;; Remove background so it doesn't look selected with region.
-  ;;     ;; Make the foreground the same as `diredfl-flag-mark' (ie. orange).
-  ;;     (with-eval-after-load 'diredfl
-  ;;       (set-face-attribute 'diredfl-flag-mark-line nil
-  ;;                           :foreground "orange"
-  ;;                           :background 'unspecified))
-
-  ;;     (with-eval-after-load 'dired-subtree
-  ;;       (set-face-attribute 'dired-subtree-depth-1-face nil
-  ;;                           :background 'unspecified)
-  ;;       (set-face-attribute 'dired-subtree-depth-2-face nil
-  ;;                           :background 'unspecified)
-  ;;       (set-face-attribute 'dired-subtree-depth-3-face nil
-  ;;                           :background 'unspecified)
-  ;;       (set-face-attribute 'dired-subtree-depth-4-face nil
-  ;;                           :background 'unspecified)
-  ;;       (set-face-attribute 'dired-subtree-depth-5-face nil
-  ;;                           :background 'unspecified)
-  ;;       (set-face-attribute 'dired-subtree-depth-6-face nil
-  ;;                           :background 'unspecified))
-
-  ;;     ;; Trying out line underline (instead of wave).
-  ;;     (mapatoms (lambda (atom)
-  ;;                 (let ((underline nil))
-  ;;                   (when (and (facep atom)
-  ;;                              (setq underline
-  ;;                                    (face-attribute atom
-  ;;                                                    :underline))
-  ;;                              (eq (plist-get underline :style) 'wave))
-  ;;                     (plist-put underline :style 'line)
-  ;;                     (set-face-attribute atom nil
-  ;;                                         :underline underline)))))))
 #+end_src
 *** Doom themes
     #+begin_src emacs-lisp
@@ -446,7 +269,7 @@
       (add-to-list 'eglot-server-programs '((js2-mode) "typescript-language-server" "--stdio"))
       ;; Elixir
         (add-hook 'elixir-mode-hook 'eglot-ensure)
-        (add-to-list 'eglot-server-programs '(elixir-mode "~/projects/nick/emacs.d/elixir-ls/release/language_server.sh")))
+        (add-to-list 'eglot-server-programs '(elixir-mode "~/build/elixir-ls-v0.24.1/language_server.sh")))
 
 #+end_src
 * Project Management
@@ -563,8 +386,6 @@
 * Text editing
 ** Delimiter pairs
   #+begin_src emacs-lisp
-    ;; (electric-pair-mode -1)
-
     (use-package smartparens
       :config
       (require 'smartparens-config)
@@ -830,7 +651,7 @@ Make react usable
     :hook (typescript-mode js-mode typescript-tsx-mode))
 #+end_src
 * Git
-** Magit fix (it's broken in elpaca
+** Magit fix (it's broken in elpaca)
   Latest seq for transient (with workaround due to a bug on elpaca)
   #+begin_src emacs-lisp
 (defun +elpaca-unload-seq (e)
