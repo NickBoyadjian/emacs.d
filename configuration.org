@@ -27,7 +27,7 @@
 (add-hook 'emacs-startup-hook #'nb/display-startup-time)
 #+end_src
 
-* Basic UI tweaks
+* Basic tweaks
 #+begin_src emacs-lisp
   (menu-bar-mode -1)
   (tool-bar-mode -1)
@@ -54,6 +54,8 @@
   (global-eldoc-mode -1)
   ;; Set the font
   (set-face-attribute 'default nil :family "JetBrainsMono Nerd Font" :height 140)
+
+  (setq warning-minimum-level :error)
 #+end_src
 ** UTF-8
 #+begin_src emacs-lisp
@@ -268,9 +270,8 @@
       (add-hook 'js2-mode-hook 'eglot-ensure)
       (add-to-list 'eglot-server-programs '((js2-mode) "typescript-language-server" "--stdio"))
       ;; Elixir
-        (add-hook 'elixir-mode-hook 'eglot-ensure)
-        (add-to-list 'eglot-server-programs '(elixir-mode "~/build/elixir-ls-v0.24.1/language_server.sh")))
-
+      (add-hook 'elixir-mode-hook 'eglot-ensure)
+      (add-to-list 'eglot-server-programs '(elixir-mode "~/build/elixir-ls-v0.24.1/language_server.sh")))
 #+end_src
 * Project Management
 ** Project
@@ -619,7 +620,8 @@
          (elixir-ts-mode . exunit-mode)
          (elixir-mode . exunit-mode))
 
-
+     (use-package compile-credo
+       :ensure (compile-credo :type git :url "git@github.com:vinikira/compile-credo.git" :branch "main"))
 #+end_src
 ** Javascript
 I want indentation of 2 for json/js.
@@ -649,6 +651,11 @@ Make react usable
     :ensure t
     :commands jest-test-mode
     :hook (typescript-mode js-mode typescript-tsx-mode))
+#+end_src
+** Gleam
+   #+begin_src emacs-lisp
+(use-package gleam-ts-mode
+  :mode (rx ".gleam" eos))
 #+end_src
 * Git
 ** Magit fix (it's broken in elpaca)
@@ -958,4 +965,24 @@ Latest transient (bug elpaca)
        "engineering/account-structure/anakin"
        "engineering/account-structure/anakin_client"))
     (podium-gitlab-defaultcodepath "~/podium/"))
+#+end_src
+* Env vars
+  #+begin_src emacs-lisp
+    (use-package exec-path-from-shell
+      :config
+      (exec-path-from-shell-initialize))
+#+end_src
+* Compile
+#+begin_src emacs-lisp
+  (use-package compile
+      :ensure nil
+      :bind
+      (("C-x c" . (lambda ()
+                    (interactive)
+                    (let ((current-prefix-arg '(4)))
+                      (call-interactively 'project-compile)))))
+      :custom
+      (compilation-scroll-output t)
+      :hook
+      (compilation-filter . ansi-color-compilation-filter))
 #+end_src
