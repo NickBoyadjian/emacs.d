@@ -142,30 +142,6 @@
 #+end_src
 ** Tab-bar
 #+begin_src emacs-lisp
-  ;;   (defun nb/tab-name-format (tab i)
-  ;;     "Return the tab name with different font colors for active and inactive tabs."
-  ;;     (set-face-attribute 'tab-bar nil :background "#1e1e1e")
-  ;;     (let* ((current-tab (eq (car tab) 'current-tab))
-  ;;            (name (alist-get 'name tab))
-  ;;            (separator " ")
-  ;;            ;; Define face for active and inactive tabs
-  ;;            (active-name-face '(:foreground "#C792EA" :background "#1e1e1e" :height 1))
-  ;;            (inactive-name-face '(:foreground "#FFFFFF" :background "#1e1e1e" :height 1))
-  ;;            (separator-face '(:foreground "#FFFFFF")))
-  ;;       (concat
-  ;;        ;; Apply different faces based on whether the tab is active
-  ;;        (propertize name 'face (if current-tab active-name-face inactive-name-face))
-  ;;        (propertize separator 'face separator-face))))
-
-
-  ;; (setq tab-bar-tab-name-format-function #'nb/tab-name-format
-  ;;       tab-bar-tab-hints t
-  ;;       tab-bar-show t
-  ;;       tab-bar-position 'top
-  ;;       tab-bar-close-button-show nil
-  ;;       tab-bar-new-button-show nil
-  ;;       tab-bar-auto-width nil)
-
   (use-package vim-tab-bar
     :ensure t
     :config
