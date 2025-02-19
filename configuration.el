@@ -1,3 +1,14 @@
+(setq gc-cons-threshold (* 50 1000 1000))
+
+  (defun nb/display-startup-time ()
+  (message "Emacs loaded in %s with %d garbage collections."
+           (format "%.2f seconds"
+                   (float-time
+                     (time-subtract after-init-time before-init-time)))
+           gcs-done))
+
+(add-hook 'emacs-startup-hook #'nb/display-startup-time)
+
 (menu-bar-mode -1)
 (tool-bar-mode -1)
 (scroll-bar-mode -1)
@@ -10,16 +21,16 @@
 (add-hook 'prog-mode-hook 'display-line-numbers-mode)
 
 (when (display-graphic-p)
-;; No title. See init.el for initial value.
-(setq-default frame-title-format nil)
-;; Hide the cursor in inactive windows.
-(setq cursor-in-non-selected-windows nil)
-(setq-default cursor-type 'bar)
-;; Avoid native dialogs.
-(setq use-dialog-box nil))
+  ;; No title. See init.el for initial value.
+  (setq-default frame-title-format nil)
+  ;; Hide the cursor in inactive windows.
+  (setq cursor-in-non-selected-windows nil)
+  (setq-default cursor-type t)
+  ;; Avoid native dialogs.
+  (setq use-dialog-box nil))
 ;; Make the title bar look good
-(add-to-list 'default-frame-alist '(ns-transparent-titlebar . t))
-(add-to-list 'default-frame-alist '(ns-appearance . dark))
+;; (add-to-list 'default-frame-alist '(ns-transparent-titlebar . t))
+;; (add-to-list 'default-frame-alist '(ns-appearance . dark))
 (global-eldoc-mode -1)
 ;; Set the font
 (set-face-attribute 'default nil :family "JetBrainsMono Nerd Font" :height 140)
@@ -45,7 +56,14 @@
         doom-modeline-buffer-file-name-style 'file-name
         doom-modeline-lsp-icon t))
 
-(use-package hide-mode-line
+;; (use-package moody
+;;   :config
+;;   (moody-replace-mode-line-front-space)
+;;   (moody-replace-mode-line-buffer-identification)
+;;   (moody-replace-vc-mode))
+
+(use-package
+  hide-mode-line
   :config
   (add-hook 'treemacs-mode-hook #'hide-mode-line-mode)
   (add-hook 'vterm-mode-hook #'hide-mode-line-mode)
@@ -86,7 +104,7 @@
   ;; Global settings (defaults)
   (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
         doom-themes-enable-italic t) ; if nil, italics is universally disabled
-  (load-theme 'doom-dracula t)
+  (load-theme 'doom-vibrant t)
 
   ;; Enable flashing mode-line on errors
   (doom-themes-visual-bell-config)
@@ -98,29 +116,10 @@
   ;; Corrects (and improves) org-mode's native fontification.
   (doom-themes-org-config))
 
-(defun nb/tab-name-format (tab i)
-    "Return the tab name with different font colors for active and inactive tabs."
-    (set-face-attribute 'tab-bar nil :background "#282a36")
-    (let* ((current-tab (eq (car tab) 'current-tab))
-           (name (alist-get 'name tab))
-           (separator " ")
-           ;; Define face for active and inactive tabs
-           (active-name-face '(:foreground "#C792EA" :background "#282a36" :height 1))
-           (inactive-name-face '(:foreground "#FFFFFF" :background "#282a36" :height 1))
-           (separator-face '(:foreground "#FFFFFF")))
-      (concat
-       ;; Apply different faces based on whether the tab is active
-       (propertize name 'face (if current-tab active-name-face inactive-name-face))
-       (propertize separator 'face separator-face))))
-
-
-(setq tab-bar-tab-name-format-function #'nb/tab-name-format
-      tab-bar-tab-hints t
-      tab-bar-show t
-      tab-bar-position 'top
-      tab-bar-close-button-show nil
-      tab-bar-new-button-show nil
-      tab-bar-auto-width nil)
+(use-package vim-tab-bar
+  :ensure t
+  :config
+  (vim-tab-bar-mode t))
 
 (use-package dashboard
   :custom
@@ -144,56 +143,18 @@
                           (projects  . 5)
                           (agenda    . 5))))
 
-(use-package treesit
-      :ensure nil
-      :mode (("\\.tsx\\'" . tsx-ts-mode)
-             ("\\.js\\'"  . typescript-ts-mode)
-             ("\\.mjs\\'" . typescript-ts-mode)
-             ("\\.mts\\'" . typescript-ts-mode)
-             ("\\.cjs\\'" . typescript-ts-mode)
-             ("\\.ts\\'"  . typescript-ts-mode)
-             ("\\.jsx\\'" . tsx-ts-mode)
-             ("\\.json\\'" .  json-ts-mode)
-             ("\\.Dockerfile\\'" . dockerfile-ts-mode)
-             ("\\.prisma\\'" . prisma-ts-mode)
-             ;; More modes defined here...
-             )
-      :preface
-      (defun os/setup-install-grammars ()
-        "Install Tree-sitter grammars if they are absent."
-        (interactive)
-        (dolist (grammar
-                 '((css . ("https://github.com/tree-sitter/tree-sitter-css" "v0.20.0"))
-                   (javascript . ("https://github.com/tree-sitter/tree-sitter-javascript" "v0.21.2" "src"))
-                   (json . ("https://github.com/tree-sitter/tree-sitter-json" "v0.20.2"))
-                   (elisp "https://github.com/Wilfred/tree-sitter-elisp")
-                   (tsx . ("https://github.com/tree-sitter/tree-sitter-typescript" "v0.20.3" "tsx/src"))
-                   (typescript . ("https://github.com/tree-sitter/tree-sitter-typescript" "v0.20.3" "typescript/src"))
-                   (yaml . ("https://github.com/ikatyang/tree-sitter-yaml" "v0.5.0"))))
-          (add-to-list 'treesit-language-source-alist grammar)
-          ;; Only install `grammar' if we don't already have it
-          ;; installed. However, if you want to *update* a grammar then
-          ;; this obviously prevents that from happening.
-          (unless (treesit-language-available-p (car grammar))
-            (treesit-install-language-grammar (car grammar)))))
+(use-package ultra-scroll
+  :ensure (ultra-scroll :host github :repo "jdtsmith/ultra-scroll")
+  :init
+  (setq scroll-conservatively 101 ; important!
+    scroll-margin 0)
+  :config
+  (ultra-scroll-mode 1))
 
-      ;; Optional, but recommended. Tree-sitter enabled major modes are
-      ;; distinct from their ordinary counterparts.
-      ;;
-      ;; You can remap major modes with `major-mode-remap-alist'. Note
-      ;; that this does *not* extend to hooks! Make sure you migrate them
-      ;; also
-      (dolist (mapping
-               '((css-mode . css-ts-mode)
-                 (typescript-mode . typescript-ts-mode)
-                 (js-mode . typescript-ts-mode)
-                 (js2-mode . typescript-ts-mode)
-                 (css-mode . css-ts-mode)
-                 (json-mode . json-ts-mode)
-                 (js-json-mode . json-ts-mode)))
-        (add-to-list 'major-mode-remap-alist mapping))
-      :config
-      (os/setup-install-grammars))
+(use-package treesit-auto
+  :ensure t
+  :config
+  (global-treesit-auto-mode))
 
 (use-package eglot
   :ensure nil
@@ -214,6 +175,8 @@
   ;; Make eldoc only display one liner in echo area
   (setq eldoc-echo-area-use-multiline-p nil)
 
+  ;;Rust
+  (add-to-list 'eglot-server-programs '(rust-ts-mode . ("rust-analyzer")))
   ;; Javascript
   (add-hook 'js2-mode-hook 'eglot-ensure)
   (add-to-list 'eglot-server-programs '((js2-mode) "typescript-language-server" "--stdio"))
@@ -271,47 +234,18 @@ Switch to the project specific term buffer if it already exists."
       (unless (eq ibuffer-sorting-mode 'alphabetic)
         (ibuffer-do-sort-by-alphabetic)))))
 
-(use-package tabspaces
-  :hook (after-init . tabspaces-mode) ;; use this only if you want the minor-mode loaded at startup.
-  :commands (tabspaces-switch-or-create-workspace
-             tabspaces-open-or-create-project-and-workspace)
-  :bind (
-         ("C-x p p" . tabspaces-open-or-create-project-and-workspace)
-         ("H-<tab>  o" . tabspaces-open-or-create-project-and-workspace)
-         ("H-<tab> TAB" . tabspaces-switch-or-create-workspace)
-         ("H-<tab> k" . tabspaces-kill-buffers-close-workspace))
-  :custom
-  (tabspaces-use-filtered-buffers-as-default t)
-  (tabspaces-default-tab "Default")
-  (tabspaces-remove-to-default t)
-  (tabspaces-include-buffers '("*scratch*"))
-  ;; (tabspaces-initialize-project-with-todo t)
-  ;; (tabspaces-todo-file-name "project-todo.org")
-
-  ;; sessions
-  (tabspaces-session t)
-  (tabspaces-session-auto-restore t)
-
-  :config
-  ;; Filter Buffers for Consult-Buffer
-  (with-eval-after-load 'consult
-    ;; hide full buffer list (still available with "b" prefix)
-    (consult-customize consult--source-buffer :hidden t :default nil)
-    ;; set consult-workspace buffer list
-    (defvar consult--source-workspace
-      (list :name     "Workspace Buffers"
-            :narrow   ?w
-            :history  'buffer-name-history
-            :category 'buffer
-            :state    #'consult--buffer-state
-            :default  t
-            :items    (lambda () (consult--buffer-query
-                                  :predicate #'tabspaces--local-buffer-p
-                                  :sort 'visibility
-                                  :as #'buffer-name)))
-
-      "Set workspace buffer list for consult-buffer.")
-    (add-to-list 'consult-buffer-sources 'consult--source-workspace)))
+(use-package otpp
+  :straight t
+  :after project
+  :init
+  ;; If you like to define some aliases for better user experience
+  (defalias 'one-tab-per-project-mode 'otpp-mode)
+  (defalias 'one-tab-per-project-override-mode 'otpp-override-mode)
+  ;; Enable `otpp-mode` globally
+  (otpp-mode 1)
+  ;; If you want to advice the commands in `otpp-override-commands`
+  ;; to be run in the current's tab (so, current project's) root directory
+  (otpp-override-mode 1))
 
 (use-package apheleia
   :ensure t
@@ -326,10 +260,6 @@ Switch to the project specific term buffer if it already exists."
 (use-package smartparens
   :config
   (require 'smartparens-config)
-  (sp-with-modes '(elixir-mode)
-    (sp-local-pair "do" "end"
-                   :when '(("SPC" "RET"))
-                   :post-handlers '(("||\n[i]" "RET"))))
   :bind
   (:map smartparens-mode-map
         ("C-)" . sp-forward-slurp-sexp)
@@ -338,9 +268,20 @@ Switch to the project specific term buffer if it already exists."
         ("C-}" . sp-backward-barf-sexp))
   :hook   (prog-mode . smartparens-mode))
 
-(defconst NB/IS-MACOS (eq system-type 'darwin))
+(defun nb/electric-modes ()
+  (interactive)
+  (electric-pair-mode 1)
+  (electric-indent-mode 1))
 
-(when NB/IS-MACOS
+(add-hook 'prog-mode-hook 'nb/electric-modes)
+
+(use-package rainbow-delimiters
+  :config
+  (add-hook 'prog-mode-hook #'rainbow-delimiters-mode))
+
+(defconst nb/is-macos (eq system-type 'darwin))
+
+(when nb/is-macos
   (setopt mac-command-modifier 'meta
 	  mac-option-modifier 'hyper))
 
@@ -446,43 +387,46 @@ Switch to the project specific term buffer if it already exists."
 (setf epa-pinentry-mode 'loopback)
 
 (use-package consult
-  :bind  (;; Related to the control commands.
-          ("C-c h" . consult-history)
-          ("C-c m" . consult-mode-command)
-          ("C-c b" . consult-bookmark)
-          ("C-c k" . consult-kmacro)
-          ;; Navigation
-          ("C-x M-:" . consult-complex-command)
-          ("C-x b". consult-buffer)
-          ("C-x 4 b". consult-buffer-other-window)
-          ("C-x 5 b". consult-buffer-other-frame)
-          ;; Goto map
-          ("M-g e" . consult-compile-error)
-          ("M-g g" . consult-goto-line)
-          ("M-g M-g" . consult-goto-line)
-          ("M-g o" . consult-outline)
-          ("M-g m" . consult-mark)
-          ("M-g k" . consult-global-mark)
-          ("M-g i" . consult-imenu)
-          ("M-g I" . consult-imenu-multi)
-          ("M-g !" . consult-flymake)
+       :bind  (;; Related to the control commands.
+               ("C-c h" . consult-history)
+               ("C-c m" . consult-mode-command)
+               ("C-c b" . consult-bookmark)
+               ("C-c k" . consult-kmacro)
+               ;; Navigation
+               ("C-x M-:" . consult-complex-command)
+               ("C-x b". consult-buffer)
+               ("C-x 4 b". consult-buffer-other-window)
+               ("C-x 5 b". consult-buffer-other-frame)
+               ;; Goto map
+               ("M-n" . next-error)
+               ("M-p" . previous-error)
+               ("M-g e" . consult-compile-error)
+               ("M-g g" . consult-goto-line)
+               ("M-g M-g" . consult-goto-line)
+               ("M-g o" . consult-outline)
+               ("M-g m" . consult-mark)
+               ("M-g k" . consult-global-mark)
+               ("M-g i" . consult-imenu)
+               ("M-g I" . consult-imenu-multi)
+               ("M-g !" . consult-flymake)
 
-          ("M-s f" . consult-find)
-          ("M-s L" . consult-locate)
-          ("M-s g" . consult-git-grep)
-          ("M-s G" . consult-grep)
-          ("M-s r" . consult-ripgrep)
-          ("M-s l" . consult-line)
-          ("M-s k" . consult-keep-lines)
-          ("M-s u" . consult-focus-lines))
-  :custom
-  (completion-in-region-function #'consult-completion-in-region)
-  (consult-narrow-key "<")
-  (consult-project-root-function #'projectile-project-root)
-  ;; Provides consistent display for both `consult-register' and the register
-  ;; preview when editing registers.
-  (register-preview-delay 0)
-  (register-preview-function #'consult-register-preview))
+               ("M-s f" . consult-find)
+               ("M-s L" . consult-locate)
+               ("M-s g" . consult-git-grep)
+               ("M-s G" . consult-grep)
+               ("M-s r" . consult-ripgrep)
+               ("M-s l" . consult-line)
+               ("M-s k" . consult-keep-lines)
+               ("M-s u" . consult-focus-lines)
+)
+       :custom
+       (completion-in-region-function #'consult-completion-in-region)
+       (consult-narrow-key "<")
+       (consult-project-root-function #'projectile-project-root)
+       ;; Provides consistent display for both `consult-register' and the register
+       ;; preview when editing registers.
+       (register-preview-delay 0)
+       (register-preview-function #'consult-register-preview))
 
 (use-package marginalia
   :init
@@ -504,19 +448,21 @@ Switch to the project specific term buffer if it already exists."
       (end-of-line)
       (newline-and-indent)
       (insert "|> ")))
-  :bind (("<C-return>" . nb/enter-pipe)))
+  :bind (:map elixir-mode-map
+              ("<C-return>" . nb/enter-pipe)))
 
-  (use-package exunit
-    :config
-    ;; fix broken dark test link
-    (custom-set-faces
-     '(ansi-color-black ((t (:background "MediumPurple2" :foreground "MediumPurple2")))))
-    :hook
-    (elixir-ts-mode . exunit-mode)
-    (elixir-mode . exunit-mode))
+
+(use-package exunit
+  :config
+  ;; fix broken dark test link
+  (custom-set-faces
+   '(ansi-color-black ((t (:background "MediumPurple2" :foreground "MediumPurple2")))))
+  :hook
+  (elixir-ts-mode . exunit-mode)
+  (elixir-mode . exunit-mode))
 
 (use-package compile-credo
-    :ensure (podium :type git :url "git@github.com:vinikira/compile-credo.git" :branch "master"))
+  :ensure (compile-credo :type git :url "git@github.com:vinikira/compile-credo.git" :branch "main"))
 
 (setq-default js-indent-level 2)
 
@@ -537,6 +483,23 @@ Switch to the project specific term buffer if it already exists."
 
 (use-package gleam-ts-mode
   :mode (rx ".gleam" eos))
+
+(use-package cider
+  :ensure t :defer t
+  :config
+  (setq
+   cider-repl-history-file ".cider-repl-history"
+   nrepl-log-messages t))
+
+(use-package rust-mode
+  :init
+  (setq rust-mode-treesitter-derive t))
+
+(use-package cargo-mode
+  :hook
+  (rust-mode . cargo-minor-mode)
+  :config
+  (setq compilation-scroll-output t))
 
 (defun +elpaca-unload-seq (e)
   (and (featurep 'seq) (unload-feature 'seq t))
@@ -756,10 +719,21 @@ Switch to the project specific term buffer if it already exists."
   (setq switch-window-shortcut-style 'qwerty))
 
 (keymap-global-set "C-x C-b" 'ibuffer)
+(global-set-key (kbd "C-c n") 'next-buffer)
+(global-set-key (kbd "C-c p") 'previous-buffer)
 
 (use-package corfu
   :init
   (global-corfu-mode))
+
+(use-package kind-icon
+  :ensure t
+  :after corfu
+  ;:custom
+  ; (kind-icon-blend-background t)
+  ; (kind-icon-default-face 'corfu-default) ; only needed with blend-background
+  :config
+  (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter))
 
 (use-package emacs
   :ensure nil
@@ -814,3 +788,19 @@ Switch to the project specific term buffer if it already exists."
 (use-package exec-path-from-shell
   :config
   (exec-path-from-shell-initialize))
+
+(use-package compile
+    :ensure nil
+    :bind
+    (("C-x c" . (lambda ()
+                  (interactive)
+                  (let ((current-prefix-arg '(4)))
+                    (call-interactively 'project-compile)))))
+    :custom
+    (compilation-scroll-output t)
+    :hook
+    (compilation-filter . ansi-color-compilation-filter))
+
+(use-package casual
+  :config
+  (keymap-set dired-mode-map "C-o" #'casual-dired-tmenu))

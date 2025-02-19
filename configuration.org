@@ -81,6 +81,12 @@
           doom-modeline-buffer-file-name-style 'file-name
           doom-modeline-lsp-icon t))
 
+  ;; (use-package moody
+  ;;   :config
+  ;;   (moody-replace-mode-line-front-space)
+  ;;   (moody-replace-mode-line-buffer-identification)
+  ;;   (moody-replace-vc-mode))
+
   (use-package
     hide-mode-line
     :config
@@ -377,6 +383,14 @@
     :ensure t
     :bind-keymap ("C-c s" . surround-keymap))
 #+end_src
+** Drag stuff
+   #+begin_src emacs-lisp
+(use-package drag-stuff
+  :ensure t
+  :config
+  (drag-stuff-global-mode 1)
+  (drag-stuff-define-keys))
+#+end_src
 * Org mode
   #+begin_src emacs-lisp
 (use-package org
@@ -437,6 +451,7 @@
 #+begin_src emacs-lisp
   (setq
      org-directory "~/.org/"
+     org-agenda-files (list org-directory)
      org-startup-folded t)
 #+end_src
 ** Org capture
@@ -610,6 +625,11 @@ Make react usable
        :config
        (setq compilation-scroll-output t))
 #+end_src
+** Yaml (yuck)
+   #+begin_src emacs-lisp
+(use-package yaml-mode
+  :mode ("\\.ya?ml\\'" . yaml-mode))
+#+end_src
 * Git
 ** Magit fix (it's broken in elpaca)
   Latest seq for transient (with workaround due to a bug on elpaca)
@@ -668,6 +688,15 @@ Latest transient (bug elpaca)
                          :background nil
                          :height 140
                          :italic t))))
+#+end_src
+** Optimize
+   For some reason xcode git works better than brew git
+   #+begin_src emacs-lisp
+     (when nb/is-macos
+       (let ((git-path "/Applications/Xcode.app/Contents/Developer/usr/bin/git"))
+         (when (and (eq system-type 'darwin)
+                    (file-exists-p git-path))
+           (setopt magit-git-executable git-path))))
 #+end_src
 * Which key
   #+begin_src emacs-lisp
@@ -866,6 +895,15 @@ Latest transient (bug elpaca)
     (use-package corfu
       :init
       (global-corfu-mode))
+
+    (use-package kind-icon
+      :ensure t
+      :after corfu
+      ;:custom
+      ; (kind-icon-blend-background t)
+      ; (kind-icon-default-face 'corfu-default) ; only needed with blend-background
+      :config
+      (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter))
 
     (use-package emacs
       :ensure nil
