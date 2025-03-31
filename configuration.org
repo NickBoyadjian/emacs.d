@@ -126,25 +126,31 @@
     (set-frame-parameter nil 'internal-border-width 0)
     (set-frame-position (selected-frame) 15 53))
 #+end_src
+*** EF
+        #+begin_src emacs-lisp
+          (use-package ef-themes
+            :config
+            (load-theme 'ef-owl))
+#+end_src
 *** Doom themes
     #+begin_src emacs-lisp
-      (use-package doom-themes
-        :ensure t
-        :config
+      ;; (use-package doom-themes
+        ;; :ensure t
+        ;; :config
         ;; Global settings (defaults)
-        (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
-              doom-themes-enable-italic t) ; if nil, italics is universally disabled
-        (load-theme 'doom-vibrant t)
+        ;; (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
+              ;; doom-themes-enable-italic t) ; if nil, italics is universally disabled
+        ;; (load-theme 'doom-vibrant t)
 
         ;; Enable flashing mode-line on errors
-        (doom-themes-visual-bell-config)
+        ;; (doom-themes-visual-bell-config)
         ;; Enable custom neotree theme (all-the-icons must be installed!)
-        (doom-themes-neotree-config)
+        ;; (doom-themes-neotree-config)
         ;; or for treemacs users
-        (setq doom-themes-treemacs-theme "doom-colors") ; use "doom-colors" for less minimal icon theme
-        (doom-themes-treemacs-config)
+        ;; (setq doom-themes-treemacs-theme "doom-colors") ; use "doom-colors" for less minimal icon theme
+        ;; (doom-themes-treemacs-config)
         ;; Corrects (and improves) org-mode's native fontification.
-        (doom-themes-org-config))
+        ;; (doom-themes-org-config))
 #+end_src
 ** Tab-bar
 #+begin_src emacs-lisp
@@ -176,6 +182,38 @@
             dashboard-items '((recents   . 5)
                               (projects  . 5)
                               (agenda    . 5))))
+#+end_src
+** Fontaine
+   #+begin_src emacs-lisp
+(use-package fontaine
+  :ensure t
+  :config
+  ;; Define your font presets
+  (setq fontaine-presets
+        '((regular
+           :default-height 130
+           :default-weight normal)
+          (large
+           :default-height 160
+           :default-weight normal)
+          (presentation
+           :default-height 190
+           :default-weight normal)
+          (t
+           ;; fallback preset - used if no other is specified
+           :default-family "JetbrainsMono Nerd Font"
+           :default-weight normal
+           :default-height 120
+           :variable-pitch-family "Noto Sans"
+           :variable-pitch-height 1.0)))
+
+  ;; Set your preferred preset
+  (fontaine-set-preset 'regular)
+
+  ;; Optional: Set up some convenient commands
+  :bind (("C-c f r" . (lambda () (interactive) (fontaine-set-preset 'regular)))
+         ("C-c f l" . (lambda () (interactive) (fontaine-set-preset 'large)))
+         ("C-c f p" . (lambda () (interactive) (fontaine-set-preset 'presentation)))))
 #+end_src
 ** UltraScroll (smooth)
    #+begin_src emacs-lisp
@@ -458,6 +496,34 @@
 #+begin_src emacs-lisp
 (setq org-default-notes-file (concat org-directory "notes.org"))
 #+end_src
+** Denote
+   #+begin_src emacs-lisp
+     ;; Another basic setup with a little more to it.
+     (use-package denote
+       :ensure t
+       :init
+       ;; Create our own prefix map for denote commands
+       (define-prefix-command 'denote-prefix-map)
+       :bind-keymap
+       ("C-c n" . denote-prefix-map)
+       :hook (dired-mode . denote-dired-mode)
+       :bind
+       (("C-c n" . denote-prefix-map)
+        :map denote-prefix-map
+        ("n" . denote)
+        ("r" . denote-rename-file)
+        ("l" . denote-link)
+        ("b" . denote-backlinks)
+        ("d" . denote-sort-dired))
+       :config
+       (setq denote-directory (expand-file-name "~/Documents/notes/"))
+
+       ;; Automatically rename Denote buffers when opening them so that
+       ;; instead of their long file name they have, for example, a literal
+       ;; "[D]" followed by the file's title.  Read the doc string of
+       ;; `denote-rename-buffer-format' for how to modify this.
+       (denote-rename-buffer-mode 1))
+#+end_src
 * Search
 ** Vertico
 #+begin_src emacs-lisp
@@ -629,6 +695,15 @@ Make react usable
    #+begin_src emacs-lisp
 (use-package yaml-mode
   :mode ("\\.ya?ml\\'" . yaml-mode))
+#+end_src
+** Markdown
+   #+begin_src emacs-lisp
+(use-package markdown-mode
+  :ensure t
+  :mode ("README\\.md\\'" . gfm-mode)
+  :init (setq markdown-command "multimarkdown")
+  :bind (:map markdown-mode-map
+         ("C-c C-e" . markdown-do)))
 #+end_src
 * Git
 ** Magit fix (it's broken in elpaca)
@@ -887,8 +962,8 @@ Latest transient (bug elpaca)
 * Buffer management
   #+begin_src emacs-lisp
     (keymap-global-set "C-x C-b" 'ibuffer)
-    (global-set-key (kbd "C-c n") 'next-buffer)
-    (global-set-key (kbd "C-c p") 'previous-buffer)
+    (global-set-key (kbd "C-c C-n") 'next-buffer)
+    (global-set-key (kbd "C-c C-p") 'previous-buffer)
 #+end_src
 * Corfu (auto-complete)
   #+begin_src emacs-lisp
