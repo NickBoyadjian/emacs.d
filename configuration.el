@@ -37,6 +37,9 @@
 
 (setq warning-minimum-level :error)
 
+;; don't make backup files (files ending with tilde)
+(setq make-backup-files nil)
+
 (setopt default-process-coding-system '(utf-8-unix . utf-8-unix)
       locale-coding-system 'utf-8)
 
@@ -79,7 +82,7 @@
 
 ;; Set font face height. Value is 1/10pt.
 (set-face-attribute 'default nil
-		    :height 140)
+		      :height 140)
 
 ;; Don't use continuation character.
 (setq-default fringe-indicator-alist (delq (assq 'continuation fringe-indicator-alist) fringe-indicator-alist))
@@ -98,23 +101,27 @@
   (set-frame-parameter nil 'internal-border-width 0)
   (set-frame-position (selected-frame) 15 53))
 
-(use-package doom-themes
-  :ensure t
+(use-package ef-themes
   :config
+  (load-theme 'ef-dream))
+
+;; (use-package doom-themes
+  ;; :ensure t
+  ;; :config
   ;; Global settings (defaults)
-  (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
-        doom-themes-enable-italic t) ; if nil, italics is universally disabled
-  (load-theme 'doom-vibrant t)
+  ;; (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
+        ;; doom-themes-enable-italic t) ; if nil, italics is universally disabled
+  ;; (load-theme 'doom-vibrant t)
 
   ;; Enable flashing mode-line on errors
-  (doom-themes-visual-bell-config)
+  ;; (doom-themes-visual-bell-config)
   ;; Enable custom neotree theme (all-the-icons must be installed!)
-  (doom-themes-neotree-config)
+  ;; (doom-themes-neotree-config)
   ;; or for treemacs users
-  (setq doom-themes-treemacs-theme "doom-colors") ; use "doom-colors" for less minimal icon theme
-  (doom-themes-treemacs-config)
+  ;; (setq doom-themes-treemacs-theme "doom-colors") ; use "doom-colors" for less minimal icon theme
+  ;; (doom-themes-treemacs-config)
   ;; Corrects (and improves) org-mode's native fontification.
-  (doom-themes-org-config))
+  ;; (doom-themes-org-config))
 
 (use-package vim-tab-bar
   :ensure t
@@ -143,6 +150,36 @@
                           (projects  . 5)
                           (agenda    . 5))))
 
+(use-package fontaine
+  :ensure t
+  :config
+  ;; Define your font presets
+  (setq fontaine-presets
+        '((regular
+           :default-height 130
+           :default-weight normal)
+          (large
+           :default-height 160
+           :default-weight normal)
+          (presentation
+           :default-height 190
+           :default-weight normal)
+          (t
+           ;; fallback preset - used if no other is specified
+           :default-family "JetbrainsMono Nerd Font"
+           :default-weight normal
+           :default-height 120
+           :variable-pitch-family "Noto Sans"
+           :variable-pitch-height 1.0)))
+
+  ;; Set your preferred preset
+  (fontaine-set-preset 'regular)
+
+  ;; Optional: Set up some convenient commands
+  :bind (("C-c f r" . (lambda () (interactive) (fontaine-set-preset 'regular)))
+         ("C-c f l" . (lambda () (interactive) (fontaine-set-preset 'large)))
+         ("C-c f p" . (lambda () (interactive) (fontaine-set-preset 'presentation)))))
+
 (use-package ultra-scroll
   :ensure (ultra-scroll :host github :repo "jdtsmith/ultra-scroll")
   :init
@@ -150,6 +187,15 @@
     scroll-margin 0)
   :config
   (ultra-scroll-mode 1))
+
+(use-package tree-sitter-langs
+  :ensure t
+  :after tree-sitter)
+
+(use-package tree-sitter
+  :config
+  (global-tree-sitter-mode)
+  (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode))
 
 (use-package treesit-auto
   :ensure t
@@ -182,7 +228,9 @@
   (add-to-list 'eglot-server-programs '((js2-mode) "typescript-language-server" "--stdio"))
   ;; Elixir
   (add-hook 'elixir-mode-hook 'eglot-ensure)
-  (add-to-list 'eglot-server-programs '(elixir-mode "~/build/elixir-ls-v0.24.1/language_server.sh")))
+  (add-hook 'elixir-ts-mode-hook 'eglot-ensure)
+  (add-to-list 'eglot-server-programs '(elixir-ts-mode "~/build/elixir-ls-v0.27.2/language_server.sh"))
+  (add-to-list 'eglot-server-programs '(elixir-mode "~/build/elixir-ls-v0.27.2/language_server.sh")))
 
 (use-package project
   :ensure nil
@@ -204,7 +252,7 @@
     (nb/--project-open-file "_api.org"))
 
   :bind (:map project-prefix-map
-              ("o a" . nb/project-api-file)
+              ("a" . nb/project-api-file)
               ("S" . nb/project-save-project-buffers))
   :config
 
@@ -235,7 +283,7 @@ Switch to the project specific term buffer if it already exists."
         (ibuffer-do-sort-by-alphabetic)))))
 
 (use-package otpp
-  :straight t
+  :ensure t
   :after project
   :init
   ;; If you like to define some aliases for better user experience
@@ -311,10 +359,17 @@ Switch to the project specific term buffer if it already exists."
   :ensure t
   :bind-keymap ("C-c s" . surround-keymap))
 
+(use-package drag-stuff
+  :ensure t
+  :config
+  (drag-stuff-global-mode 1)
+  (drag-stuff-define-keys))
+
 (use-package org
   :ensure nil
+  :hook (org-mode . org-indent-mode)
   :custom
-    (org-confirm-babel-evaluate nil))
+  (org-confirm-babel-evaluate nil))
 
 (use-package org-modern
 :ensure t
@@ -330,8 +385,8 @@ Switch to the project specific term buffer if it already exists."
    (internal-border-width . 4)))
 ;; Make things blend in
 (dolist (face '(window-divider
-		window-divider-first-pixel
-		window-divider-last-pixel))
+	  window-divider-first-pixel
+	  window-divider-last-pixel))
   (face-spec-reset-face face)
   (set-face-foreground face (face-attribute 'default :background)))
 :config
@@ -343,6 +398,7 @@ Switch to the project specific term buffer if it already exists."
  org-special-ctrl-a/e t
  org-insert-heading-respect-content t
  org-startup-folded t
+ org-modern-star '("◉" "○" "▶" "○" "○" "○")
 
  ;; Org styling
  org-hide-emphasis-markers t
@@ -365,9 +421,36 @@ Switch to the project specific term buffer if it already exists."
 
 (setq
    org-directory "~/.org/"
+   org-agenda-files (list org-directory)
    org-startup-folded t)
 
 (setq org-default-notes-file (concat org-directory "notes.org"))
+
+;; Another basic setup with a little more to it.
+(use-package denote
+  :ensure t
+  :init
+  ;; Create our own prefix map for denote commands
+  (define-prefix-command 'denote-prefix-map)
+  :bind-keymap
+  ("C-c n" . denote-prefix-map)
+  :hook (dired-mode . denote-dired-mode)
+  :bind
+  (("C-c n" . denote-prefix-map)
+   :map denote-prefix-map
+   ("n" . denote)
+   ("r" . denote-rename-file)
+   ("l" . denote-link)
+   ("b" . denote-backlinks)
+   ("d" . denote-sort-dired))
+  :config
+  (setq denote-directory (expand-file-name "~/Documents/notes/"))
+
+  ;; Automatically rename Denote buffers when opening them so that
+  ;; instead of their long file name they have, for example, a literal
+  ;; "[D]" followed by the file's title.  Read the doc string of
+  ;; `denote-rename-buffer-format' for how to modify this.
+  (denote-rename-buffer-mode 1))
 
 (use-package vertico
   :init
@@ -412,7 +495,7 @@ Switch to the project specific term buffer if it already exists."
 
                ("M-s f" . consult-find)
                ("M-s L" . consult-locate)
-               ("M-s g" . consult-git-grep)
+               ("M-s g" . consult-ripgrep)
                ("M-s G" . consult-grep)
                ("M-s r" . consult-ripgrep)
                ("M-s l" . consult-line)
@@ -421,6 +504,8 @@ Switch to the project specific term buffer if it already exists."
 )
        :custom
        (completion-in-region-function #'consult-completion-in-region)
+       (setq consult-grep-highlight-matches nil)
+       (setq consult-preview-raw t)
        (consult-narrow-key "<")
        (consult-project-root-function #'projectile-project-root)
        ;; Provides consistent display for both `consult-register' and the register
@@ -439,16 +524,21 @@ Switch to the project specific term buffer if it already exists."
   :ensure t
   :mode "\\.nix\\'")
 
-(use-package elixir-mode
-  :ensure t
-  :init
-  (defun nb/enter-pipe ()
+(defun nb/enter-pipe ()
     (interactive)
     (let ((oldpos (point)))
       (end-of-line)
       (newline-and-indent)
       (insert "|> ")))
+
+(use-package elixir-mode
+  :ensure t
   :bind (:map elixir-mode-map
+              ("<C-return>" . nb/enter-pipe)))
+
+(use-package elixir-ts-mode
+  :ensure t
+  :bind (:map elixir-ts-mode-map
               ("<C-return>" . nb/enter-pipe)))
 
 
@@ -461,8 +551,8 @@ Switch to the project specific term buffer if it already exists."
   (elixir-ts-mode . exunit-mode)
   (elixir-mode . exunit-mode))
 
-(use-package compile-credo
-  :ensure (compile-credo :type git :url "git@github.com:vinikira/compile-credo.git" :branch "main"))
+;(use-package compile-credo
+  ;:ensure (compile-credo :type git :url "git@github.com:vinikira/compile-credo.git" :branch "main"))
 
 (setq-default js-indent-level 2)
 
@@ -501,6 +591,16 @@ Switch to the project specific term buffer if it already exists."
   :config
   (setq compilation-scroll-output t))
 
+(use-package yaml-mode
+  :mode ("\\.ya?ml\\'" . yaml-mode))
+
+(use-package markdown-mode
+  :ensure t
+  :mode ("README\\.md\\'" . gfm-mode)
+  :init (setq markdown-command "multimarkdown")
+  :bind (:map markdown-mode-map
+         ("C-c C-e" . markdown-do)))
+
 (defun +elpaca-unload-seq (e)
   (and (featurep 'seq) (unload-feature 'seq t))
   (elpaca--continue-build e))
@@ -511,7 +611,7 @@ Switch to the project specific term buffer if it already exists."
                        elpaca--pre-built-steps elpaca-build-steps))
           (list '+elpaca-unload-seq 'elpaca--activate-package)))
 
-(use-package seq :ensure `(seq :build ,(+elpaca-seq-build-steps)))
+;; (use-package seq :ensure `(seq :build ,(+elpaca-seq-build-steps)))
 
 (use-package transient)
 
@@ -544,6 +644,12 @@ Switch to the project specific term buffer if it already exists."
                     :background nil
                     :height 140
                     :italic t))))
+
+(when nb/is-macos
+  (let ((git-path "/Applications/Xcode.app/Contents/Developer/usr/bin/git"))
+    (when (and (eq system-type 'darwin)
+               (file-exists-p git-path))
+      (setopt magit-git-executable git-path))))
 
 (use-package which-key
   :ensure t
@@ -650,9 +756,9 @@ Switch to the project specific term buffer if it already exists."
   :hook (dired-mode . treemacs-icons-dired-enable-once)
   :ensure t)
 
-(use-package treemacs-magit
-  :after (treemacs magit)
-  :ensure t)
+;(use-package treemacs-magit
+;  :after (treemacs magit)
+;  :ensure t)
 
 (use-package treemacs-all-the-icons
   :after (treemacs projectile)
@@ -719,8 +825,8 @@ Switch to the project specific term buffer if it already exists."
   (setq switch-window-shortcut-style 'qwerty))
 
 (keymap-global-set "C-x C-b" 'ibuffer)
-(global-set-key (kbd "C-c n") 'next-buffer)
-(global-set-key (kbd "C-c p") 'previous-buffer)
+(global-set-key (kbd "C-c C-n") 'next-buffer)
+(global-set-key (kbd "C-c C-p") 'previous-buffer)
 
 (use-package corfu
   :init
@@ -803,4 +909,5 @@ Switch to the project specific term buffer if it already exists."
 
 (use-package casual
   :config
-  (keymap-set dired-mode-map "C-o" #'casual-dired-tmenu))
+  ;; (keymap-set dired-mode-map "C-o" #'casual-dired-tmenu)
+)

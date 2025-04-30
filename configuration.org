@@ -55,6 +55,9 @@
   (set-face-attribute 'default nil :family "JetBrainsMono Nerd Font" :height 140)
 
   (setq warning-minimum-level :error)
+
+  ;; don't make backup files (files ending with tilde)
+  (setq make-backup-files nil)
 #+end_src
 ** UTF-8
 #+begin_src emacs-lisp
@@ -128,9 +131,9 @@
 #+end_src
 *** EF
         #+begin_src emacs-lisp
-          (use-package ef-themes
-            :config
-            (load-theme 'ef-owl))
+(use-package ef-themes
+  :config
+  (load-theme 'ef-dream))
 #+end_src
 *** Doom themes
     #+begin_src emacs-lisp
@@ -227,10 +230,22 @@
 #+end_src
 * Treesitter
 #+begin_src emacs-lisp
-    (use-package treesit-auto
-      :ensure t
-      :config
-      (global-treesit-auto-mode))
+  (use-package tree-sitter-langs
+    :ensure t
+    :after tree-sitter)
+
+  (use-package tree-sitter
+    :config
+    (global-tree-sitter-mode)
+    (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode))
+#+end_src
+
+#+begin_src emacs-lisp
+  (use-package treesit-auto
+    :ensure t
+    :config
+    ;; (global-treesit-auto-mode)
+    )
 #+end_src
 * LSP
   #+begin_src emacs-lisp
@@ -260,7 +275,9 @@
       (add-to-list 'eglot-server-programs '((js2-mode) "typescript-language-server" "--stdio"))
       ;; Elixir
       (add-hook 'elixir-mode-hook 'eglot-ensure)
-      (add-to-list 'eglot-server-programs '(elixir-mode "~/build/elixir-ls-v0.24.1/language_server.sh")))
+      (add-hook 'elixir-ts-mode-hook 'eglot-ensure)
+      (add-to-list 'eglot-server-programs '(elixir-ts-mode "~/build/elixir-ls-v0.27.2/language_server.sh"))
+      (add-to-list 'eglot-server-programs '(elixir-mode "~/build/elixir-ls-v0.27.2/language_server.sh")))
 #+end_src
 * Project Management
 ** Project
@@ -285,7 +302,7 @@
         (nb/--project-open-file "_api.org"))
 
       :bind (:map project-prefix-map
-                  ("o a" . nb/project-api-file)
+                  ("a" . nb/project-api-file)
                   ("S" . nb/project-save-project-buffers))
       :config
 
@@ -320,7 +337,7 @@
 ** One tab per project
    #+begin_src emacs-lisp
      (use-package otpp
-       :straight t
+       :ensure t
        :after project
        :init
        ;; If you like to define some aliases for better user experience
@@ -431,10 +448,12 @@
 #+end_src
 * Org mode
   #+begin_src emacs-lisp
-(use-package org
-  :ensure nil
-  :custom
-    (org-confirm-babel-evaluate nil))
+    (use-package org
+      :ensure nil
+      :hook (org-mode . org-indent-mode)
+      :custom
+      (org-confirm-babel-evaluate nil))
+
 #+end_src
 ** Org modern
 #+begin_src emacs-lisp
@@ -452,8 +471,8 @@
      (internal-border-width . 4)))
   ;; Make things blend in
   (dolist (face '(window-divider
-		  window-divider-first-pixel
-		  window-divider-last-pixel))
+  	  window-divider-first-pixel
+  	  window-divider-last-pixel))
     (face-spec-reset-face face)
     (set-face-foreground face (face-attribute 'default :background)))
   :config
@@ -465,6 +484,7 @@
    org-special-ctrl-a/e t
    org-insert-heading-respect-content t
    org-startup-folded t
+   org-modern-star '("◉" "○" "▶" "○" "○" "○")
 
    ;; Org styling
    org-hide-emphasis-markers t
@@ -576,7 +596,7 @@
 
                     ("M-s f" . consult-find)
                     ("M-s L" . consult-locate)
-                    ("M-s g" . consult-git-grep)
+                    ("M-s g" . consult-ripgrep)
                     ("M-s G" . consult-grep)
                     ("M-s r" . consult-ripgrep)
                     ("M-s l" . consult-line)
@@ -585,6 +605,8 @@
      )
             :custom
             (completion-in-region-function #'consult-completion-in-region)
+            (setq consult-grep-highlight-matches nil)
+            (setq consult-preview-raw t)
             (consult-narrow-key "<")
             (consult-project-root-function #'projectile-project-root)
             ;; Provides consistent display for both `consult-register' and the register
@@ -611,16 +633,21 @@
 #+end_src
 ** Elixir
    #+begin_src emacs-lisp
-     (use-package elixir-mode
-       :ensure t
-       :init
-       (defun nb/enter-pipe ()
+     (defun nb/enter-pipe ()
          (interactive)
          (let ((oldpos (point)))
            (end-of-line)
            (newline-and-indent)
            (insert "|> ")))
+
+     (use-package elixir-mode
+       :ensure t
        :bind (:map elixir-mode-map
+                   ("<C-return>" . nb/enter-pipe)))
+
+     (use-package elixir-ts-mode
+       :ensure t
+       :bind (:map elixir-ts-mode-map
                    ("<C-return>" . nb/enter-pipe)))
 
 
@@ -633,8 +660,8 @@
        (elixir-ts-mode . exunit-mode)
        (elixir-mode . exunit-mode))
 
-     (use-package compile-credo
-       :ensure (compile-credo :type git :url "git@github.com:vinikira/compile-credo.git" :branch "main"))
+     ;(use-package compile-credo
+       ;:ensure (compile-credo :type git :url "git@github.com:vinikira/compile-credo.git" :branch "main"))
 #+end_src
 ** Javascript
 I want indentation of 2 for json/js.
@@ -709,17 +736,17 @@ Make react usable
 ** Magit fix (it's broken in elpaca)
   Latest seq for transient (with workaround due to a bug on elpaca)
   #+begin_src emacs-lisp
-(defun +elpaca-unload-seq (e)
-  (and (featurep 'seq) (unload-feature 'seq t))
-  (elpaca--continue-build e))
+    (defun +elpaca-unload-seq (e)
+      (and (featurep 'seq) (unload-feature 'seq t))
+      (elpaca--continue-build e))
 
-;; You could embed this code directly in the reicpe, I just abstracted it into a function.
-(defun +elpaca-seq-build-steps ()
-  (append (butlast (if (file-exists-p (expand-file-name "seq" elpaca-builds-directory))
-                       elpaca--pre-built-steps elpaca-build-steps))
-          (list '+elpaca-unload-seq 'elpaca--activate-package)))
+    ;; You could embed this code directly in the reicpe, I just abstracted it into a function.
+    (defun +elpaca-seq-build-steps ()
+      (append (butlast (if (file-exists-p (expand-file-name "seq" elpaca-builds-directory))
+                           elpaca--pre-built-steps elpaca-build-steps))
+              (list '+elpaca-unload-seq 'elpaca--activate-package)))
 
-(use-package seq :ensure `(seq :build ,(+elpaca-seq-build-steps)))
+    ;; (use-package seq :ensure `(seq :build ,(+elpaca-seq-build-steps)))
   #+end_src
 
 Latest transient (bug elpaca)
@@ -882,9 +909,9 @@ Latest transient (bug elpaca)
       :hook (dired-mode . treemacs-icons-dired-enable-once)
       :ensure t)
 
-    (use-package treemacs-magit
-      :after (treemacs magit)
-      :ensure t)
+    ;(use-package treemacs-magit
+    ;  :after (treemacs magit)
+    ;  :ensure t)
 
     (use-package treemacs-all-the-icons
       :after (treemacs projectile)
@@ -1056,7 +1083,8 @@ Latest transient (bug elpaca)
 #+end_src
 * Casual suite
   #+begin_src emacs-lisp
-    (use-package casual
-      :config
-      (keymap-set dired-mode-map "C-o" #'casual-dired-tmenu))
+(use-package casual
+  :config
+  ;; (keymap-set dired-mode-map "C-o" #'casual-dired-tmenu)
+)
 #+end_src
