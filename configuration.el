@@ -40,6 +40,8 @@
 ;; don't make backup files (files ending with tilde)
 (setq make-backup-files nil)
 
+(modify-all-frames-parameters '((internal-border-width . 0)))
+
 (setopt default-process-coding-system '(utf-8-unix . utf-8-unix)
       locale-coding-system 'utf-8)
 
@@ -82,7 +84,7 @@
 
 ;; Set font face height. Value is 1/10pt.
 (set-face-attribute 'default nil
-		      :height 140)
+	      :height 140)
 
 ;; Don't use continuation character.
 (setq-default fringe-indicator-alist (delq (assq 'continuation fringe-indicator-alist) fringe-indicator-alist))
@@ -94,6 +96,8 @@
   ;; Mispressing C-z or C-x C-z invokes `suspend-frame' (disable).
   (global-unset-key (kbd "C-z"))
   (global-unset-key (kbd "C-x C-z"))
+  (add-to-list 'default-frame-alist '(internal-border-width . 0))
+
   :config
   ;; Enable expanding frame to end of screen.
   (setq frame-resize-pixelwise t)
@@ -105,23 +109,34 @@
   :config
   (load-theme 'ef-dream))
 
-(use-package doom-themes
+;; (use-package doom-themes
+;;   :ensure t
+;;   :config
+;;   ;; Global settings (defaults)
+;;   (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
+;;         doom-themes-enable-italic t) ; if nil, italics is universally disabled
+;;   (load-theme 'doom-tokyo-night t)
+
+;;   ;; Enable flashing mode-line on errors
+;;   (doom-themes-visual-bell-config)
+;;   ;; Enable custom neotree theme (all-the-icons must be installed!)
+;;   (doom-themes-neotree-config)
+;;   ;; or for treemacs users
+;;   (setq doom-themes-treemacs-theme "doom-colors") ; use "doom-colors" for less minimal icon theme
+;;   (doom-themes-treemacs-config)
+;;   ;; Corrects (and improves) org-mode's native fontification.
+;;   (doom-themes-org-config))
+
+(use-package catppuccin-theme
   :ensure t
   :config
-  ;; Global settings (defaults)
-  (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
-        doom-themes-enable-italic t) ; if nil, italics is universally disabled
-  (load-theme 'doom-tokyo-night t)
+  (setq catppuccin-flavor 'frappe)
+  (load-theme 'catppuccin :no-confirm))
 
-  ;; Enable flashing mode-line on errors
-  (doom-themes-visual-bell-config)
-  ;; Enable custom neotree theme (all-the-icons must be installed!)
-  (doom-themes-neotree-config)
-  ;; or for treemacs users
-  (setq doom-themes-treemacs-theme "doom-colors") ; use "doom-colors" for less minimal icon theme
-  (doom-themes-treemacs-config)
-  ;; Corrects (and improves) org-mode's native fontification.
-  (doom-themes-org-config))
+(use-package solaire-mode
+  :ensure t
+  :config
+  (solaire-global-mode))
 
 (use-package vim-tab-bar
   :ensure t
@@ -129,7 +144,9 @@
   (vim-tab-bar-mode t))
 
 (use-package dashboard
+  :ensure t
   :custom
+  (add-to-list 'auto-mode-alist '("\\*dashboard\\*" . dashboard-mode))
   (dashboard-projects-backend 'project-el)
   (dashboard-items '((recents  . 5)
                      (projects . 5)
@@ -146,8 +163,8 @@
   (dashboard-setup-startup-hook)
   (setq dashboard-startup-banner 3
         ;; dashboard-icon-type 'all-the-icons
-        dashboard-items '((recents   . 5)
-                          (projects  . 5)
+        dashboard-items '((projects  . 5)
+                          (recents   . 5)
                           (agenda    . 5))))
 
 (use-package fontaine
@@ -173,7 +190,7 @@
            :variable-pitch-height 1.0)))
 
   ;; Set your preferred preset
-  (fontaine-set-preset 'regular)
+  (fontaine-set-preset 'presentation)
 
   ;; Optional: Set up some convenient commands
   :bind (("C-c f r" . (lambda () (interactive) (fontaine-set-preset 'regular)))
@@ -228,10 +245,15 @@
   (add-hook 'js2-mode-hook 'eglot-ensure)
   (add-to-list 'eglot-server-programs '((js2-mode) "typescript-language-server" "--stdio"))
   ;; Elixir
-  (add-hook 'elixir-mode-hook 'eglot-ensure)
-  (add-hook 'elixir-ts-mode-hook 'eglot-ensure)
-  (add-to-list 'eglot-server-programs '(elixir-ts-mode "~/build/elixir-ls-v0.27.2/language_server.sh"))
-  (add-to-list 'eglot-server-programs '(elixir-mode "~/build/elixir-ls-v0.27.2/language_server.sh")))
+  (setf (alist-get '(elixir-mode elixir-ts-mode heex-ts-mode)
+                   eglot-server-programs
+                   nil nil #'equal)
+        (eglot-alternatives '(("expert" "--stdio"))))
+  ;; (add-hook 'elixir-mode-hook 'eglot-ensure)
+  ;; (add-hook 'elixir-ts-mode-hook 'eglot-ensure)
+  ;; (add-to-list 'eglot-server-programs '(elixir-ts-mode "expert --stdio"))
+  ;; (add-to-list 'eglot-server-programs '(elixir-mode "expert --stdio")))
+)
 
 (use-package project
   :ensure nil
@@ -382,8 +404,7 @@ Switch to the project specific term buffer if it already exists."
 ;; them as large as in the examples (40 pixels!), so I am using 4
 ;; instead
 (modify-all-frames-parameters
- '((right-divider-width . 4)
-   (internal-border-width . 4)))
+ '((right-divider-width . 4)))
 ;; Make things blend in
 (dolist (face '(window-divider
 	  window-divider-first-pixel
@@ -539,6 +560,8 @@ Switch to the project specific term buffer if it already exists."
 
 (use-package elixir-ts-mode
   :ensure t
+  :hook (elixir-ts-mode . eglot-ensure)
+  :hook (heex-ts-mode . eglot-ensure)
   :bind (:map elixir-ts-mode-map
               ("<C-return>" . nb/enter-pipe)))
 
@@ -559,7 +582,7 @@ Switch to the project specific term buffer if it already exists."
 
 (use-package js2-mode
   :ensure t
-  :mode "\\.js\\'"
+  :mode "\\.\\(m?js\\)\\'"
   :config)
 
 (use-package rjsx-mode)
@@ -592,6 +615,22 @@ Switch to the project specific term buffer if it already exists."
   :config
   (setq compilation-scroll-output t))
 
+(use-package go-mode
+  :ensure t
+  :mode "\\.go\\'"
+  :config
+  ;; Disable tabs and set indentation to 2 spaces
+  (setq-default indent-tabs-mode nil)
+  (setq-default tab-width 2)
+  
+  ;; Standard go-mode indentation variables
+  (setq gofmt-command "gofmt")
+  (add-hook 'go-mode-hook
+            (lambda ()
+              (setq-local indent-tabs-mode nil)
+              (setq-local tab-width 2)
+              (setq-local standard-indent 2))))
+
 (use-package yaml-mode
   :mode ("\\.ya?ml\\'" . yaml-mode))
 
@@ -601,6 +640,12 @@ Switch to the project specific term buffer if it already exists."
   :init (setq markdown-command "multimarkdown")
   :bind (:map markdown-mode-map
          ("C-c C-e" . markdown-do)))
+
+(use-package qml-mode
+  :ensure t)
+
+(use-package hyprlang-ts-mode
+  :ensure t)
 
 (defun +elpaca-unload-seq (e)
   (and (featurep 'seq) (unload-feature 'seq t))
